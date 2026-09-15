@@ -23,24 +23,27 @@ public struct SystemOutputGate {
     public private(set) var generation = -1
     public private(set) var position = Point.zero
     private var lastFrame = 0.0
+    private var lastDelivery = 0.0
     private var lastValidHand = 0.0
     public init() {}
 
     public mutating func begin(generation: Int, position: Point, now: Double) -> [InputIntent] {
         let releases = stop()
         self.generation = generation; self.position = position
-        active = true; lastFrame = now; lastValidHand = -.infinity
+        // The first frame was captured before begin() was called by its receiver.
+        // Session identity rejects old sessions; capture age rejects stale input.
+        active = true; lastFrame = -.infinity; lastDelivery = now; lastValidHand = -.infinity
         return releases
     }
     public mutating func heartbeat(generation: Int, capturedAt: Double, validHand: Bool, now: Double) {
-        guard active, generation == self.generation, capturedAt >= lastFrame,
+        guard active, generation == self.generation, capturedAt > lastFrame,
               capturedAt <= now, now - capturedAt < 0.2 else { return }
-        lastFrame = capturedAt
+        lastFrame = capturedAt; lastDelivery = now
         if validHand { lastValidHand = capturedAt }
     }
     public mutating func accept(_ intents: [InputIntent], generation: Int, now: Double, permitted: Bool) -> [InputIntent] {
         guard active, generation == self.generation else { return [] }
-        guard permitted, now - lastFrame < 0.25 else { return stop() }
+        guard permitted, now - lastDelivery < 0.25 else { return stop() }
         var result: [InputIntent] = []
         for intent in intents {
             switch intent {
@@ -70,7 +73,7 @@ public struct SystemOutputGate {
     }
     public mutating func expire(now: Double, permitted: Bool) -> [InputIntent] {
         guard active else { return [] }
-        if !permitted || now - lastFrame >= 0.25 || (held && now - lastValidHand >= 0.2) { return stop() }
+        if !permitted || now - lastDelivery >= 0.25 || (held && now - lastValidHand >= 0.2) { return stop() }
         return []
     }
     public mutating func stop() -> [InputIntent] {

@@ -54,6 +54,33 @@ final class SystemOutputGateTests: XCTestCase {
         XCTAssertEqual(gate.accept([.down(p)], generation: 2, now: 10.02, permitted: true), [])
         XCTAssertFalse(gate.held)
     }
+
+    func testFirstFreshCameraFrameCanPredateOutputSessionStart() {
+        var gate = SystemOutputGate()
+        _ = gate.begin(generation: 1, position: p, now: 10)
+        gate.heartbeat(generation: 1, capturedAt: 9.84, validHand: true, now: 10)
+        XCTAssertEqual(gate.accept([.move(Point(110, 200))], generation: 1, now: 10, permitted: true), [.move(Point(110, 200))])
+    }
+
+    func testContinuousDeliveryDoesNotShutDownBetweenDelayedFrames() {
+        var gate = SystemOutputGate()
+        _ = gate.begin(generation: 1, position: p, now: 10)
+        gate.heartbeat(generation: 1, capturedAt: 10.01, validHand: true, now: 10.19)
+        // 90 ms without delivery, but 270 ms since the previous capture.
+        XCTAssertTrue(gate.expire(now: 10.28, permitted: true).isEmpty)
+        XCTAssertTrue(gate.active)
+        gate.heartbeat(generation: 1, capturedAt: 10.12, validHand: true, now: 10.29)
+        XCTAssertEqual(gate.accept([.move(Point(120, 200))], generation: 1, now: 10.29, permitted: true), [.move(Point(120, 200))])
+        _ = gate.expire(now: 10.55, permitted: true)
+        XCTAssertFalse(gate.active, "Actual delivery loss must still stop output")
+    }
+
+    func testDuplicateCaptureCannotRefreshDeliveryDeadline() {
+        var gate = started()
+        gate.heartbeat(generation: 3, capturedAt: 10.01, validHand: true, now: 10.19)
+        _ = gate.expire(now: 10.27, permitted: true)
+        XCTAssertFalse(gate.active)
+    }
     func testBeginAloneDoesNotAuthorizeNewPressWithoutValidHand() {
         var gate = SystemOutputGate()
         _ = gate.begin(generation: 1, position: p, now: 10)
