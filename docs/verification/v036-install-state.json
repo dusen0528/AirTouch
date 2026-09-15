@@ -1,0 +1,19 @@
+{
+  "version": "0.3.6",
+  "build": "9",
+  "bundleID": "dev.airtouch.mac",
+  "installation": "/Users/inho/Applications/AirTouch.app",
+  "registeredApps": [
+    "/Users/inho/Applications/AirTouch.app"
+  ],
+  "processes": [
+    {
+      "pid": 60041,
+      "command": "/Users/inho/Applications/AirTouch.app/Contents/MacOS/AirTouch"
+    }
+  ],
+  "signatureVerified": true,
+  "sameDesignatedRequirement": true,
+  "temporaryPackageRemoved": true,
+  "binarySHA256": "a61c96ef8bc112f0fc9658852d0f85e4c3f15562972959e89258eea31401a457"
+}

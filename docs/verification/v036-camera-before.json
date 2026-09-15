@@ -1,0 +1,24 @@
+{
+  "appVersion" : "0.3.5",
+  "cameraRunningAtEnd" : true,
+  "captureDeliveryMs" : {
+    "median" : 70.152750005945563,
+    "p95" : 101.68875000090338
+  },
+  "captureToReceiptMs" : {
+    "median" : 86.779457982629538,
+    "p95" : 117.68337499233894
+  },
+  "inferenceMs" : {
+    "median" : 17.940249992534518,
+    "p95" : 28.927083010785282
+  },
+  "measuredFrames" : 191,
+  "osInputEnabled" : false,
+  "pixelFormat" : "420v",
+  "status" : "손 인식 중",
+  "uiDeliveryMs" : {
+    "median" : 0.046999979531392455,
+    "p95" : 5.6768750073388219
+  }
+}

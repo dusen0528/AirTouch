@@ -1,0 +1,25 @@
+[0/1] Planning build
+Building for debugging...
+[0/6] Write sources
+[1/6] Write swift-version--58304C5D6DBC2206.txt
+[3/6] Emitting module AirTouchCoreTests
+[4/6] Compiling AirTouchCoreTests ScrollTraceReplayTests.swift
+[4/6] Write Objects.LinkFileList
+[5/6] Linking AirTouchPackageTests
+Build complete! (1.53s)
+Test Suite 'Selected tests' started at 2026-09-15 23:14:09.560.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-15 23:14:09.562.
+Test Suite 'ScrollTraceReplayTests' started at 2026-09-15 23:14:09.562.
+Test Case '-[AirTouchCoreTests.ScrollTraceReplayTests testLocalV035ScrollResumeTraceWhenProvided]' started.
+Test Case '-[AirTouchCoreTests.ScrollTraceReplayTests testLocalV035ScrollResumeTraceWhenProvided]' passed (0.070 seconds).
+Test Suite 'ScrollTraceReplayTests' passed at 2026-09-15 23:14:09.631.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.070 (0.070) seconds
+Test Suite 'AirTouchPackageTests.xctest' passed at 2026-09-15 23:14:09.631.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.070 (0.070) seconds
+Test Suite 'Selected tests' passed at 2026-09-15 23:14:09.631.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.070 (0.071) seconds
+SCROLL_TRACE_RESUMED=9/9
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

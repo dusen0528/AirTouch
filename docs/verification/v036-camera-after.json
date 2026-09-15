@@ -1,0 +1,25 @@
+{
+  "appVersion" : "0.3.6",
+  "cameraRunningAtEnd" : true,
+  "captureDeliveryMs" : {
+    "median" : 91.993041016394272,
+    "p95" : 101.2994580087252
+  },
+  "captureToReceiptMs" : {
+    "median" : 109.26233298960142,
+    "p95" : 121.80204101605341
+  },
+  "coalescedFrames" : 0,
+  "inferenceMs" : {
+    "median" : 15.412084001582116,
+    "p95" : 29.098457976942882
+  },
+  "measuredFrames" : 169,
+  "osInputEnabled" : false,
+  "pixelFormat" : "420v",
+  "status" : "손을 카메라에 보여주세요",
+  "uiDeliveryMs" : {
+    "median" : 0.068458000896498561,
+    "p95" : 6.8566660047508776
+  }
+}

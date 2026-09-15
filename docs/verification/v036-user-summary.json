@@ -1,0 +1,34 @@
+{
+  "appVersion": "0.3.5",
+  "frames": 4465,
+  "validHandFrames": 3593,
+  "staleFrames": 132,
+  "isRunning": true,
+  "osInputEnabled": true,
+  "systemIntentCount": 1777,
+  "physicalHandoffs": 3,
+  "interruptionReasons": {
+    "검지만 펴면 다시 시작합니다": 1,
+    "손을 찾는 중 · 검지를 펴서 재개하세요": 9,
+    "쉬는 중 · 검지를 펴면 다시 시작합니다": 1,
+    "스크롤 종료 · 검지를 펴서 재개하세요": 1,
+    "엄지가 가려져 입력을 해제했습니다": 2,
+    "영상이 멈췄습니다. 입력을 해제했습니다": 1
+  },
+  "captureDeliveryMs": {
+    "median": 60.74879097286612,
+    "p95": 127.44745798408985
+  },
+  "inferenceMs": {
+    "median": 18.48304198938422,
+    "p95": 27.34304202022031
+  },
+  "uiDeliveryMs": {
+    "median": 22.959541995078325,
+    "p95": 45.85616698022932
+  },
+  "captureToReceiptMs": {
+    "median": 107.82079098862596,
+    "p95": 166.62199998972937
+  }
+}

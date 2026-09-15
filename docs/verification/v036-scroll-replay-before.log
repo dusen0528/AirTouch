@@ -1,0 +1,35 @@
+Building for debugging...
+[0/7] /private/tmp/airtouch-v035-scroll-baseline/.build/arm64-apple-macosx/debug/ReplayPackageTests.derived/runner.swift
+[1/7] Write sources
+[4/7] Write swift-version--58304C5D6DBC2206.txt
+[6/14] Compiling AirTouchCore SystemOutputGate.swift
+[7/14] Compiling AirTouchCore PracticeScene.swift
+[8/14] Compiling AirTouchCore OneEuroFilter.swift
+[9/14] Compiling AirTouchCore Demonstration.swift
+[10/14] Compiling AirTouchCore GestureEngine.swift
+[11/14] Compiling AirTouchCore Geometry.swift
+[12/14] Emitting module AirTouchCore
+[13/16] Emitting module CoreTests
+[14/16] Compiling CoreTests ScrollTraceReplayTests.swift
+[15/18] Compiling ReplayPackageTests runner.swift
+[16/18] Emitting module ReplayPackageTests
+[16/18] Write Objects.LinkFileList
+[17/18] Linking ReplayPackageTests
+Build complete! (15.81s)
+Test Suite 'Selected tests' started at 2026-09-15 23:14:42.308.
+Test Suite 'ReplayPackageTests.xctest' started at 2026-09-15 23:14:42.310.
+Test Suite 'ScrollTraceReplayTests' started at 2026-09-15 23:14:42.310.
+Test Case '-[CoreTests.ScrollTraceReplayTests testLocalV035ScrollResumeTraceWhenProvided]' started.
+/private/tmp/airtouch-v035-scroll-baseline/Tests/CoreTests/ScrollTraceReplayTests.swift:38: error: -[CoreTests.ScrollTraceReplayTests testLocalV035ScrollResumeTraceWhenProvided] : XCTAssertEqual failed: ("0") is not equal to ("9")
+Test Case '-[CoreTests.ScrollTraceReplayTests testLocalV035ScrollResumeTraceWhenProvided]' failed (0.154 seconds).
+Test Suite 'ScrollTraceReplayTests' failed at 2026-09-15 23:14:42.464.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.154 (0.155) seconds
+Test Suite 'ReplayPackageTests.xctest' failed at 2026-09-15 23:14:42.464.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.154 (0.155) seconds
+Test Suite 'Selected tests' failed at 2026-09-15 23:14:42.464.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.154 (0.156) seconds
+SCROLL_TRACE_RESUMED=0/9
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

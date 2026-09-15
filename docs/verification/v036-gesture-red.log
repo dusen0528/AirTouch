@@ -1,0 +1,46 @@
+[0/1] Planning build
+Building for debugging...
+[0/7] Write sources
+[2/7] Write swift-version--58304C5D6DBC2206.txt
+[4/11] Emitting module AirTouchCoreTests
+[5/11] Compiling AirTouchCoreTests GestureUsabilityTests.swift
+[5/11] Write Objects.LinkFileList
+[6/11] Linking AirTouchPackageTests
+[8/11] Compiling AirTouchApp AppModel.swift
+[9/11] Emitting module AirTouchApp
+[9/12] Write Objects.LinkFileList
+[10/12] Linking AirTouch
+[11/12] Applying AirTouch
+Build complete! (2.99s)
+Test Suite 'Selected tests' started at 2026-09-15 23:09:38.932.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-15 23:09:38.935.
+Test Suite 'GestureUsabilityTests' started at 2026-09-15 23:09:38.935.
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testBriefAmbiguousScrollPoseFreezesThenResumesWithoutJump]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/GestureUsabilityTests.swift:41: error: -[AirTouchCoreTests.GestureUsabilityTests testBriefAmbiguousScrollPoseFreezesThenResumesWithoutJump] : XCTAssertEqual failed: ("suspended") is not equal to ("scrolling")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/GestureUsabilityTests.swift:44: error: -[AirTouchCoreTests.GestureUsabilityTests testBriefAmbiguousScrollPoseFreezesThenResumesWithoutJump] : XCTAssertEqual failed: ("suspended") is not equal to ("scrolling")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/GestureUsabilityTests.swift:47: error: -[AirTouchCoreTests.GestureUsabilityTests testBriefAmbiguousScrollPoseFreezesThenResumesWithoutJump] : XCTAssertTrue failed
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testBriefAmbiguousScrollPoseFreezesThenResumesWithoutJump]' failed (0.120 seconds).
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testQuickDeliberatePinchClicksButSingleFrameContactDoesNot]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/GestureUsabilityTests.swift:64: error: -[AirTouchCoreTests.GestureUsabilityTests testQuickDeliberatePinchClicksButSingleFrameContactDoesNot] : XCTAssertEqual failed: ("0") is not equal to ("1")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/GestureUsabilityTests.swift:65: error: -[AirTouchCoreTests.GestureUsabilityTests testQuickDeliberatePinchClicksButSingleFrameContactDoesNot] : XCTAssertEqual failed: ("0") is not equal to ("1")
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testQuickDeliberatePinchClicksButSingleFrameContactDoesNot]' failed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testSecondClickKeepsTargetThroughSmallReleaseMotion]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/GestureUsabilityTests.swift:82: error: -[AirTouchCoreTests.GestureUsabilityTests testSecondClickKeepsTargetThroughSmallReleaseMotion] : XCTAssertTrue failed - Pinching twice must not drift off the first target
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testSecondClickKeepsTargetThroughSmallReleaseMotion]' failed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testSustainedAmbiguousScrollStopsAndOpenPalmStillStopsImmediately]' started.
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testSustainedAmbiguousScrollStopsAndOpenPalmStillStopsImmediately]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testTwoFingerPoseCanStartAndResumeScrollingDirectly]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/GestureUsabilityTests.swift:29: error: -[AirTouchCoreTests.GestureUsabilityTests testTwoFingerPoseCanStartAndResumeScrollingDirectly] : XCTAssertEqual failed: ("suspended") is not equal to ("scrolling")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/GestureUsabilityTests.swift:31: error: -[AirTouchCoreTests.GestureUsabilityTests testTwoFingerPoseCanStartAndResumeScrollingDirectly] : XCTAssertTrue failed
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/GestureUsabilityTests.swift:34: error: -[AirTouchCoreTests.GestureUsabilityTests testTwoFingerPoseCanStartAndResumeScrollingDirectly] : XCTAssertEqual failed: ("suspended") is not equal to ("scrolling")
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testTwoFingerPoseCanStartAndResumeScrollingDirectly]' failed (0.001 seconds).
+Test Suite 'GestureUsabilityTests' failed at 2026-09-15 23:09:39.057.
+	 Executed 5 tests, with 9 failures (0 unexpected) in 0.122 (0.122) seconds
+Test Suite 'AirTouchPackageTests.xctest' failed at 2026-09-15 23:09:39.057.
+	 Executed 5 tests, with 9 failures (0 unexpected) in 0.122 (0.123) seconds
+Test Suite 'Selected tests' failed at 2026-09-15 23:09:39.057.
+	 Executed 5 tests, with 9 failures (0 unexpected) in 0.122 (0.125) seconds
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
