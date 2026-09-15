@@ -83,10 +83,12 @@ enum ControlMode: String { case practice, system }
     private var demonstration = Demonstration()
     private var demoTime = 0.0
     private var previousFrame: Double?
+    private var previousFrameArrival: Double?
     private var cameraConnectionStartedAt: Double?
     private var receivedFrames = 0
     private var inferenceLatencies: [Double] = []
     private var transitions: [String] = []
+    private var interruptionReasons: [String: Int] = [:]
     private var observers: [NSObjectProtocol] = []
     private var localKeys: Any?
     private var reportURL: URL?
@@ -151,10 +153,12 @@ enum ControlMode: String { case practice, system }
         watchdog = Timer.scheduledTimer(withTimeInterval: 0.04, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 guard let self, self.isRunning, !self.isDemo else { return }
+                let previous = self.engine.state
                 self.apply(self.engine.tick(at: Self.now))
+                self.recordTransition(previous)
                 if let started = self.cameraConnectionStartedAt, self.previousFrame == nil, Self.now - started > 8 {
                     self.stop(message: "카메라 영상이 도착하지 않습니다. 다른 카메라 앱을 닫고 다시 시작해주세요")
-                } else if let last = self.previousFrame, Self.now - last > 0.2 {
+                } else if let last = self.previousFrameArrival, Self.now - last > 0.2 {
                     self.fps = 0; self.joints = [:]; self.status = "영상이 지연되어 입력을 멈췄습니다"
                 }
             }
@@ -382,7 +386,7 @@ enum ControlMode: String { case practice, system }
             let current = 1 / (result.capturedAt - previousFrame)
             fps = fps == 0 ? current : fps * 0.85 + current * 0.15
         }
-        previousFrame = result.capturedAt; receivedFrames += 1
+        previousFrame = result.capturedAt; previousFrameArrival = now; receivedFrames += 1
         if result.features != nil { validHandFrameCount += 1 }
         var trace: [String: Any] = ["sequence": result.sequence, "capturedAt": result.capturedAt,
             "receivedAt": now, "latencyMs": latency, "hands": result.handCount,
@@ -396,6 +400,9 @@ enum ControlMode: String { case practice, system }
                 "isScroll": hand.isScroll, "isOpenPalm": hand.isOpenPalm,
                 "isPinchReliable": hand.isPinchReliable,
                 "secondaryPinchRatio": hand.secondaryPinchRatio as Any? ?? NSNull()] as [String: Any]
+            trace["landmarks"] = Dictionary(uniqueKeysWithValues: result.joints.map { joint, landmark in
+                (joint.rawValue, ["x": landmark.point.x, "y": landmark.point.y, "confidence": landmark.confidence])
+            })
         }
         defer {
             trace["stateAfter"] = engine.state.rawValue
@@ -439,10 +446,12 @@ enum ControlMode: String { case practice, system }
         if previous != engine.state {
             transitions.append("\(previous.rawValue) → \(engine.state.rawValue)")
             if transitions.count > 300 { transitions.removeFirst() }
+            if engine.state == .suspended { interruptionReasons[engine.reason, default: 0] += 1 }
         }
     }
     private func clearMetrics() {
-        receivedFrames = 0; previousFrame = nil; inferenceLatencies = []; transitions = []; fps = 0; latency = 0
+        receivedFrames = 0; previousFrame = nil; previousFrameArrival = nil; inferenceLatencies = []; transitions = []; fps = 0; latency = 0
+        interruptionReasons = [:]
         validHandFrameCount = 0; staleFrameCount = 0; physicalHandoffCount = 0; frameTrace = []
         activeFrameTrace = []; lastActiveCapture = nil
         inferenceTime = 0; captureDeliveryTime = 0; uiDeliveryTime = 0
@@ -461,14 +470,14 @@ enum ControlMode: String { case practice, system }
     private func writeReport(to url: URL) throws {
         let sorted = inferenceLatencies.sorted()
         let report: [String: Any] = [
-            "schemaVersion": 4, "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development", "source": source == "꺼짐" ? "none" : isDemo ? "synthetic-demo" : "camera",
+            "schemaVersion": 5, "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development", "source": source == "꺼짐" ? "none" : isDemo ? "synthetic-demo" : "camera",
             "os": ProcessInfo.processInfo.operatingSystemVersionString,
             "frames": receivedFrames, "clicks": scene.clickCount, "drops": scene.dropCount,
             "scrollDistance": scene.scrollDistance, "inputEvents": scene.eventCount,
             "buttonHeld": scene.isPressed, "state": engine.state.rawValue,
             "sensitivity": sensitivity, "minimumCutoff": smoothing, "controlStyle": controlStyle.rawValue,
             "captureToInferenceP95Ms": sorted.isEmpty ? NSNull() : sorted[min(sorted.count - 1, Int(Double(sorted.count) * 0.95))] as Any,
-            "transitions": transitions, "osInputEnabled": systemSession, "systemIntentCount": systemEventCount,
+            "transitions": transitions, "interruptionReasons": interruptionReasons, "osInputEnabled": systemSession, "systemIntentCount": systemEventCount,
             "cameraPermission": permissions.camera == .authorized, "accessibilityPermission": permissions.accessibility,
             "validHandFrames": validHandFrameCount, "staleFrames": staleFrameCount,
             "physicalHandoffs": physicalHandoffCount, "recentFrames": frameTrace,

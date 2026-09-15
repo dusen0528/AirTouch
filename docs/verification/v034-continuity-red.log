@@ -1,0 +1,68 @@
+[0/1] Planning build
+Building for debugging...
+[0/7] Write sources
+[2/7] Write swift-version--58304C5D6DBC2206.txt
+[4/13] Compiling AirTouchCoreTests MovementContinuityTests.swift
+[5/13] Emitting module AirTouchCoreTests
+[5/13] Write Objects.LinkFileList
+[6/13] Linking AirTouchPackageTests
+[8/13] Compiling AirTouchApp ContentView.swift
+[9/13] Compiling AirTouchApp AppModel.swift
+[10/13] Emitting module AirTouchApp
+[11/13] Compiling AirTouchApp SetupView.swift
+[12/14] Compiling AirTouchApp AirTouchApp.swift
+[12/15] Write Objects.LinkFileList
+[13/15] Linking AirTouch
+[14/15] Applying AirTouch
+Build complete! (2.80s)
+Test Suite 'Selected tests' started at 2026-09-15 22:36:13.768.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-15 22:36:13.771.
+Test Suite 'MovementContinuityTests' started at 2026-09-15 22:36:13.771.
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testBriefUncertainFingerPoseKeepsPalmMovementContinuous]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:43: error: -[AirTouchCoreTests.MovementContinuityTests testBriefUncertainFingerPoseKeepsPalmMovementContinuous] : XCTAssertTrue failed
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:43: error: -[AirTouchCoreTests.MovementContinuityTests testBriefUncertainFingerPoseKeepsPalmMovementContinuous] : XCTAssertTrue failed
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testBriefUncertainFingerPoseKeepsPalmMovementContinuous]' failed (0.110 seconds).
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testDelayedButContinuouslyDeliveredPointerFramesDoNotRearm]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:17: error: -[AirTouchCoreTests.MovementContinuityTests testDelayedButContinuouslyDeliveredPointerFramesDoNotRearm] : XCTAssertEqual failed: ("39") is not equal to ("0")
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testDelayedButContinuouslyDeliveredPointerFramesDoNotRearm]' failed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pinchCandidate") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pinchCandidate") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pinchCandidate") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("pressed") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("suspended") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("suspended") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("suspended") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("suspended") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("suspended") is not equal to ("pointer")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:28: error: -[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer] : XCTAssertEqual failed: ("suspended") is not equal to ("pointer")
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer]' failed (0.006 seconds).
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testSavedUserLatencySegmentWhenProvided]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:78: error: -[AirTouchCoreTests.MovementContinuityTests testSavedUserLatencySegmentWhenProvided] : XCTAssertEqual failed: ("10") is not equal to ("0")
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testSavedUserLatencySegmentWhenProvided]' failed (0.018 seconds).
+Test Suite 'MovementContinuityTests' failed at 2026-09-15 22:36:13.907.
+	 Executed 4 tests, with 28 failures (0 unexpected) in 0.135 (0.136) seconds
+Test Suite 'AirTouchPackageTests.xctest' failed at 2026-09-15 22:36:13.907.
+	 Executed 4 tests, with 28 failures (0 unexpected) in 0.135 (0.136) seconds
+Test Suite 'Selected tests' failed at 2026-09-15 22:36:13.907.
+	 Executed 4 tests, with 28 failures (0 unexpected) in 0.135 (0.139) seconds
+CONTINUOUS_POINTER_INTERRUPTED_FRAMES=39
+USER_REPLAY_CHECKED=13 INTERRUPTED=10
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

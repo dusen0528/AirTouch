@@ -219,7 +219,7 @@ struct GestureGuide: View {
                 row("hand.point.up.left", "이동", style == .comfortable ? "검지를 편 채 손 전체를 움직이기 · 목표 근처에서는 천천히" : "검지 끝을 움직이기")
                 row("hand.pinch", "클릭", "멈춘 뒤 엄지와 검지를 가볍게 모았다 놓기")
                 row("hand.draw", "드래그", "엄지와 검지를 모은 채 손 전체를 움직이기")
-                row("cursorarrow.click.2", "우클릭", "엄지와 중지를 모았다 놓기")
+                row("cursorarrow.click.2", "우클릭", style == .comfortable ? "검지·중지를 V로 펼친 뒤 엄지와 중지를 모았다 놓기" : "엄지와 중지를 모았다 놓기")
                 row("arrow.up.arrow.down", "스크롤", "검지와 중지를 펴고 위아래로 움직이기")
                 row("hand.raised", "잠시 쉬기", "손바닥 펼치기")
             }.font(.callout).padding(10).frame(maxWidth: .infinity, alignment: .leading)

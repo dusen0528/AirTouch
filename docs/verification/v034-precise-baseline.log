@@ -1,0 +1,39 @@
+Building for debugging...
+[0/7] /private/var/folders/lf/y10g6sqx1r31qpbktbvwk_f00000gn/T/airtouch-v033-baseline-7go_il8t/.build/arm64-apple-macosx/debug/AirTouchBaselinePackageTests.derived/runner.swift
+[1/7] Write sources
+[4/7] Write swift-version--58304C5D6DBC2206.txt
+[6/14] Compiling AirTouchCore Demonstration.swift
+[7/14] Compiling AirTouchCore Geometry.swift
+[8/14] Compiling AirTouchCore GestureEngine.swift
+[9/14] Compiling AirTouchCore PracticeScene.swift
+[10/14] Compiling AirTouchCore OneEuroFilter.swift
+[11/14] Emitting module AirTouchCore
+[12/14] Compiling AirTouchCore SystemOutputGate.swift
+[13/16] Compiling AirTouchCoreTests MovementContinuityTests.swift
+[14/16] Emitting module AirTouchCoreTests
+[15/18] Compiling AirTouchBaselinePackageTests runner.swift
+[16/18] Emitting module AirTouchBaselinePackageTests
+[16/18] Write Objects.LinkFileList
+[17/18] Linking AirTouchBaselinePackageTests
+Build complete! (20.07s)
+Test Suite 'Selected tests' started at 2026-09-15 22:43:45.763.
+Test Suite 'AirTouchBaselinePackageTests.xctest' started at 2026-09-15 22:43:45.764.
+Test Suite 'MovementContinuityTests' started at 2026-09-15 22:43:45.764.
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testDelayedButContinuouslyDeliveredPointerFramesDoNotRearm]' started.
+/private/var/folders/lf/y10g6sqx1r31qpbktbvwk_f00000gn/T/airtouch-v033-baseline-7go_il8t/Tests/AirTouchCoreTests/MovementContinuityTests.swift:17: error: -[AirTouchCoreTests.MovementContinuityTests testDelayedButContinuouslyDeliveredPointerFramesDoNotRearm] : XCTAssertEqual failed: ("39") is not equal to ("0")
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testDelayedButContinuouslyDeliveredPointerFramesDoNotRearm]' failed (0.118 seconds).
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testSavedUserLatencySegmentWhenProvided]' started.
+/private/var/folders/lf/y10g6sqx1r31qpbktbvwk_f00000gn/T/airtouch-v033-baseline-7go_il8t/Tests/AirTouchCoreTests/MovementContinuityTests.swift:78: error: -[AirTouchCoreTests.MovementContinuityTests testSavedUserLatencySegmentWhenProvided] : XCTAssertEqual failed: ("10") is not equal to ("0")
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testSavedUserLatencySegmentWhenProvided]' failed (0.018 seconds).
+Test Suite 'MovementContinuityTests' failed at 2026-09-15 22:43:45.901.
+	 Executed 2 tests, with 2 failures (0 unexpected) in 0.136 (0.137) seconds
+Test Suite 'AirTouchBaselinePackageTests.xctest' failed at 2026-09-15 22:43:45.901.
+	 Executed 2 tests, with 2 failures (0 unexpected) in 0.136 (0.137) seconds
+Test Suite 'Selected tests' failed at 2026-09-15 22:43:45.901.
+	 Executed 2 tests, with 2 failures (0 unexpected) in 0.136 (0.138) seconds
+CONTINUOUS_POINTER_INTERRUPTED_FRAMES=39
+USER_REPLAY_CHECKED=13 INTERRUPTED=10
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
