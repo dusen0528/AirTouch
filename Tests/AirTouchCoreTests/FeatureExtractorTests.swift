@@ -43,6 +43,22 @@ final class FeatureExtractorTests: XCTestCase {
         XCTAssertFalse(hand.isOpenPalm)
     }
 
+    func testFoldedFingersProjectedTowardWristDoNotLookLikeOpenPalm() throws {
+        var points = joints()
+        // An occluded curl may project as a straight chain, but its tip lies
+        // toward the wrist, not beyond the knuckle like an extended finger.
+        for chain in Joint.chains.dropFirst(2) {
+            let x = try XCTUnwrap(points[chain[1]]).point.x
+            for (i, joint) in chain.dropFirst().enumerated() {
+                points[joint] = Landmark(Point(x, 0.62 + Double(i) * 0.045))
+            }
+        }
+        let hand = try XCTUnwrap(FeatureExtractor.extract(points, width: 1280, height: 720))
+        XCTAssertTrue(hand.isPointer)
+        XCTAssertFalse(hand.isOpenPalm)
+        XCTAssertFalse(hand.isScroll)
+    }
+
     func testScaleAndRotationDoNotChangePinchRatio() throws {
         let original = joints()
         let a = try XCTUnwrap(FeatureExtractor.extract(original, width: 1000, height: 1000))

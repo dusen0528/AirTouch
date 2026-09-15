@@ -94,6 +94,8 @@ public enum FeatureExtractor {
             let cosine = (a.x * b.x + a.y * b.y) / divisor
             return cosine < -0.72
                 && (metric(tip) - metric(mcp)).length > (metric(pip) - metric(mcp)).length * 1.35
+                && (metric(tip) - metric(.wrist)).length > (metric(mcp) - metric(.wrist)).length * 1.20
+                && (metric(tip) - metric(.wrist)).length > (metric(pip) - metric(.wrist)).length * 1.08
         }
         let index = extended(.indexMCP, .indexPIP, .indexDIP, .indexTip)
         let middle = extended(.middleMCP, .middlePIP, .middleDIP, .middleTip)
