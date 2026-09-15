@@ -7,21 +7,21 @@ import Darwin
 enum ControlMode: String { case practice, system }
 
 @MainActor final class AppModel: ObservableObject {
-    @Published private(set) var engine = GestureEngine()
-    @Published private(set) var scene = PracticeScene()
-    @Published private(set) var joints: [Joint: Landmark] = [:]
+    private(set) var engine = GestureEngine()
+    private(set) var scene = PracticeScene()
+    private(set) var joints: [Joint: Landmark] = [:]
     @Published private(set) var source = "꺼짐"
     @Published private(set) var status = "카메라를 켜거나 데모를 재생해보세요"
     @Published private(set) var isRunning = false
     @Published private(set) var isDemo = false
     @Published private(set) var needsCameraPermission = false
-    @Published private(set) var fps = 0.0
-    @Published private(set) var latency = 0.0
-    @Published private(set) var inferenceTime = 0.0
-    @Published private(set) var captureDeliveryTime = 0.0
-    @Published private(set) var uiDeliveryTime = 0.0
-    @Published private(set) var pinchRatio: Double?
-    @Published private(set) var cameraAspectRatio = 16.0 / 9.0
+    private(set) var fps = 0.0
+    private(set) var latency = 0.0
+    private(set) var inferenceTime = 0.0
+    private(set) var captureDeliveryTime = 0.0
+    private(set) var uiDeliveryTime = 0.0
+    private(set) var pinchRatio: Double?
+    private(set) var cameraAspectRatio = 16.0 / 9.0
     @Published var mode: ControlMode = .system
     @Published var destination: AppDestination? = .control
     @Published var showSetup = false {
@@ -33,10 +33,10 @@ enum ControlMode: String { case practice, system }
     @Published var selectedDisplayID: UInt32 = CGMainDisplayID() {
         didSet { if selectedDisplayID != oldValue { stop(message: "제어 화면을 변경했습니다"); UserDefaults.standard.set(Int(selectedDisplayID), forKey: "displayID") } }
     }
-    @Published private(set) var systemEventCount = 0
-    @Published private(set) var validHandFrameCount = 0
-    @Published private(set) var staleFrameCount = 0
-    @Published private(set) var physicalHandoffCount = 0
+    private(set) var systemEventCount = 0
+    private(set) var validHandFrameCount = 0
+    private(set) var staleFrameCount = 0
+    private(set) var physicalHandoffCount = 0
     var receivedFrameCount: Int { receivedFrames }
     var handRecognitionRate: String {
         receivedFrames == 0 ? "—" : String(format: "%.0f%%", Double(validHandFrameCount) / Double(receivedFrames) * 100)
@@ -78,6 +78,11 @@ enum ControlMode: String { case practice, system }
         didSet { engine.configuration.scrollMultiplier = reverseScroll ? -1 : 1; UserDefaults.standard.set(reverseScroll, forKey: "reverseScroll") }
     }
     let camera = CameraService()
+    // Input processes every delivered result; diagnostics redraw at 20 Hz.
+    private var presentationTimer: Timer?
+    private lazy var trackingDelivery = LatestValueDelivery<TrackingResult>(
+        schedule: { DispatchQueue.main.async(execute: $0) },
+        consume: { [weak self] in self?.receive($0) })
     private var watchdog: Timer?
     private var demoTimer: Timer?
     private var demonstration = Demonstration()
@@ -143,8 +148,14 @@ enum ControlMode: String { case practice, system }
         emergencyKeyMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
             if Self.isEmergencyKey(event) { self?.emergencyStop() }
         }
-        camera.onResult = { [weak self] result in
-            DispatchQueue.main.async { self?.receive(result) }
+        let trackingDelivery = self.trackingDelivery
+        camera.onResult = { result in trackingDelivery.submit(result) }
+        presentationTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
+            // Timer is installed on the main run loop, like the camera watchdog.
+            MainActor.assumeIsolated {
+                guard let self, self.isRunning else { return }
+                self.objectWillChange.send()
+            }
         }
         camera.onStatus = { [weak self] generation, message, failed in
             DispatchQueue.main.async {
@@ -380,7 +391,8 @@ enum ControlMode: String { case practice, system }
             staleFrameCount += 1
             status = "영상 처리가 지연되고 있습니다"; return
         }
-        joints = result.joints; status = result.message; pinchRatio = result.features?.pinchRatio
+        joints = result.joints; pinchRatio = result.features?.pinchRatio
+        if status != result.message { status = result.message }
         cameraAspectRatio = result.aspectRatio
         cameraPixelFormat = result.pixelFormat
         latency = max(0, (result.completedAt - result.capturedAt) * 1000)
@@ -457,6 +469,7 @@ enum ControlMode: String { case practice, system }
         }
     }
     private func clearMetrics() {
+        trackingDelivery.resetStatistics()
         receivedFrames = 0; previousFrame = nil; previousFrameArrival = nil; inferenceLatencies = []; transitions = []; fps = 0; latency = 0
         interruptionReasons = [:]
         validHandFrameCount = 0; staleFrameCount = 0; physicalHandoffCount = 0; frameTrace = []
@@ -490,7 +503,7 @@ enum ControlMode: String { case practice, system }
             let format = String(bytes: (0..<4).reversed().map { UInt8((self.cameraPixelFormat >> ($0 * 8)) & 0xff) }, encoding: .ascii) ?? "unknown"
             let report: [String: Any] = [
                 "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development",
-                "pixelFormat": format, "measuredFrames": rows.count, "osInputEnabled": false,
+                "pixelFormat": format, "measuredFrames": rows.count, "coalescedFrames": self.trackingDelivery.replacedCount, "osInputEnabled": false,
                 "cameraRunningAtEnd": self.isRunning, "status": self.status,
                 "captureDeliveryMs": stats(rows.compactMap { $0["captureDeliveryMs"] as? Double }),
                 "inferenceMs": stats(rows.compactMap { $0["inferenceMs"] as? Double }),
@@ -520,6 +533,7 @@ enum ControlMode: String { case practice, system }
             "transitions": transitions, "interruptionReasons": interruptionReasons, "osInputEnabled": systemSession, "systemIntentCount": systemEventCount,
             "cameraPermission": permissions.camera == .authorized, "accessibilityPermission": permissions.accessibility,
             "validHandFrames": validHandFrameCount, "staleFrames": staleFrameCount,
+            "coalescedFrames": trackingDelivery.replacedCount,
             "physicalHandoffs": physicalHandoffCount, "recentFrames": frameTrace,
             "activeFrames": activeFrameTrace,
             "note": "합성 데모는 카메라 정확도나 실제 OS 제어 검증 결과가 아닙니다. 영상은 저장하지 않습니다."

@@ -2,7 +2,7 @@ import AVFoundation
 import Vision
 import AirTouchCore
 
-struct TrackingResult {
+struct TrackingResult: Sendable {
     let generation: Int
     let sequence: Int
     let capturedAt: Double
