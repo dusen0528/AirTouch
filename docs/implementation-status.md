@@ -43,3 +43,12 @@
 로그: [테스트](verification/v031-tests.log), [설치](verification/v031-install.log), [수정 전 반응성](verification/v031-responsive-red.log), [수정 후 반응성](verification/v031-responsive-green.log).
 
 이전 구현 및 검증: [v0.3](verification/v03-implementation-status.md), [v0.2](verification/v02-implementation-status.md).
+
+
+## 권한 등록 복구 (2026-09-15)
+
+사용자가 스위치와 앱을 껐다 켜도 ‘허용 필요’가 유지된다고 보고했다. macOS tccd 로그에서 현재 앱 ID에 대해 `Failed to match existing code requirement ... kTCCServiceAccessibility`가 반복됨을 확인했다. 추정이 아니라 기존 서명 요구사항 불일치가 직접 기록되어 있었다.
+
+앱을 정상 종료한 뒤 `tccutil reset Accessibility dev.airtouch.mac`으로 해당 앱의 손쉬운 사용 등록만 초기화했다. 카메라, 다른 앱, 전역 권한은 초기화하지 않았다. 시스템 설정에서 이전 AirTouch 항목이 제거된 것도 확인했다. 안내 문구를 ‘토글’에서 ‘기존 항목 제거 후 현재 앱 다시 추가’로 수정해 개발 서명으로 설치했다.
+
+재등록 단계에서 사용자가 Touch ID 인증을 완료했다. 시스템 설정에서 AirTouch가 다시 표시되고 스위치가 켜진 상태를 확인했다. 현재 앱의 런타임 권한 승인은 최종 재시작 뒤 별도로 확인한다. [원인 로그](verification/permission-signature-mismatch.log).

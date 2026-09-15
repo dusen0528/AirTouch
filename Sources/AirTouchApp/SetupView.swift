@@ -35,7 +35,7 @@ struct SetupView: View {
                     Text("시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용에서 AirTouch를 켜세요. 목록에 없으면 +로 앱을 추가하세요.")
                         .font(.callout).foregroundStyle(.secondary)
                     Button("Finder에서 AirTouch 보기") { NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL]) }
-                    Text("앱을 업데이트한 후 허용 상태가 반영되지 않으면 목록의 AirTouch를 껐다 켜고 다시 실행하세요.")
+                    Text("목록에서 켜져 있는데도 허용되지 않으면 AirTouch를 완전히 종료한 뒤, 목록의 기존 AirTouch를 −로 제거하고 +로 현재 앱을 다시 추가하세요. 서명이 바뀐 이전 등록은 토글만으로 복구되지 않을 수 있습니다.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             } header: { Text("3. Mac 제어 허용") }

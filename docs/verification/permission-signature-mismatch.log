@@ -1,0 +1,4 @@
+2026-09-15 21:52:59.366 Df tccd[394:3958b7] [com.apple.TCC:access] Failed to match existing code requirement for subject dev.airtouch.mac and service kTCCServiceAccessibility
+2026-09-15 21:52:59.369 Df tccd[394:395c08] [com.apple.TCC:access] Failed to match existing code requirement for subject dev.airtouch.mac and service kTCCServiceAccessibility
+2026-09-15 21:55:37.331 Df tccd[394:39778f] [com.apple.TCC:access] Failed to match existing code requirement for subject dev.airtouch.mac and service kTCCServiceAccessibility
+2026-09-15 21:55:37.334 Df tccd[394:39778f] [com.apple.TCC:access] Failed to match existing code requirement for subject dev.airtouch.mac and service kTCCServiceAccessibility
