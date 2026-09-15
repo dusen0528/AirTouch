@@ -93,6 +93,8 @@ enum ControlMode: String { case practice, system }
     private var localKeys: Any?
     private var reportURL: URL?
     private var handledLaunchArguments = false
+    private var cameraPixelFormat: UInt32 = 0
+    private var isCameraBenchmark: Bool { ProcessInfo.processInfo.arguments.contains("--camera-benchmark") }
     private var terminationSignal: DispatchSourceSignal?
 
     init() {
@@ -210,9 +212,12 @@ enum ControlMode: String { case practice, system }
         if let flag = args.firstIndex(of: "--demo-report"), flag + 1 < args.count {
             reportURL = URL(fileURLWithPath: args[flag + 1])
         }
+        if let flag = args.firstIndex(of: "--camera-benchmark-report"), flag + 1 < args.count {
+            reportURL = URL(fileURLWithPath: args[flag + 1])
+        }
         // A menu-bar app can launch without restoring its window. Diagnostic
         // playback must not depend on ContentView.onAppear being called.
-        if args.contains("--demo") {
+        if args.contains("--demo") || isCameraBenchmark {
             DispatchQueue.main.async { [weak self] in self?.handleLaunchArguments() }
         }
     }
@@ -222,7 +227,8 @@ enum ControlMode: String { case practice, system }
     func handleLaunchArguments() {
         guard !handledLaunchArguments else { return }
         handledLaunchArguments = true
-        if ProcessInfo.processInfo.arguments.contains("--demo") { startDemo() }
+        if isCameraBenchmark { startCameraBenchmark() }
+        else if ProcessInfo.processInfo.arguments.contains("--demo") { startDemo() }
         else { showSetup = !UserDefaults.standard.bool(forKey: "setupCompleted.v2") || !permissions.ready }
     }
 
@@ -356,7 +362,7 @@ enum ControlMode: String { case practice, system }
 
     private func pauseWhenInactive() {
         // Practice has no OS input; preserve camera permission dialogs and the demo.
-        guard isRunning, !isDemo, !systemSession, AVCaptureDevice.authorizationStatus(for: .video) == .authorized else { return }
+        guard isRunning, !isDemo, !isCameraBenchmark, !systemSession, AVCaptureDevice.authorizationStatus(for: .video) == .authorized else { return }
         apply(engine.stop(reason: "다른 앱으로 이동해 연습을 멈췄습니다"))
         isRunning = false; camera.stop(); joints = [:]
         status = "연습을 다시 시작하려면 카메라 연습을 눌러주세요"
@@ -376,6 +382,7 @@ enum ControlMode: String { case practice, system }
         }
         joints = result.joints; status = result.message; pinchRatio = result.features?.pinchRatio
         cameraAspectRatio = result.aspectRatio
+        cameraPixelFormat = result.pixelFormat
         latency = max(0, (result.completedAt - result.capturedAt) * 1000)
         inferenceTime = max(0, (result.completedAt - result.deliveredAt) * 1000)
         captureDeliveryTime = max(0, (result.deliveredAt - result.capturedAt) * 1000)
@@ -467,6 +474,38 @@ enum ControlMode: String { case practice, system }
         }
     }
 
+    /// Development measurement: real camera + Vision, no OS input, aggregate
+    /// timings only. It never saves images or the user's hand coordinates.
+    private func startCameraBenchmark() {
+        guard let url = reportURL else { status = "카메라 측정 기록 경로를 지정해주세요"; return }
+        startCamera()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
+            guard let self else { return }
+            let rows = self.frameTrace.filter { ($0["sequence"] as? Int ?? 0) > 60 }
+            func stats(_ values: [Double]) -> [String: Double] {
+                let sorted = values.sorted()
+                guard !sorted.isEmpty else { return [:] }
+                return ["median": sorted[sorted.count / 2], "p95": sorted[min(sorted.count - 1, Int(Double(sorted.count) * 0.95))]]
+            }
+            let format = String(bytes: (0..<4).reversed().map { UInt8((self.cameraPixelFormat >> ($0 * 8)) & 0xff) }, encoding: .ascii) ?? "unknown"
+            let report: [String: Any] = [
+                "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development",
+                "pixelFormat": format, "measuredFrames": rows.count, "osInputEnabled": false,
+                "cameraRunningAtEnd": self.isRunning, "status": self.status,
+                "captureDeliveryMs": stats(rows.compactMap { $0["captureDeliveryMs"] as? Double }),
+                "inferenceMs": stats(rows.compactMap { $0["inferenceMs"] as? Double }),
+                "uiDeliveryMs": stats(rows.compactMap { $0["uiDeliveryMs"] as? Double }),
+                "captureToReceiptMs": stats(rows.compactMap { row in
+                    guard let capture = row["capturedAt"] as? Double, let receive = row["receivedAt"] as? Double else { return nil }
+                    return (receive - capture) * 1000
+                })
+            ]
+            self.stop(message: "카메라 지연 측정을 마쳤습니다")
+            do { try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]).write(to: url, options: .atomic) }
+            catch { self.status = "측정 기록 저장 실패: \(error.localizedDescription)" }
+        }
+    }
+
     private func writeReport(to url: URL) throws {
         let sorted = inferenceLatencies.sorted()
         let report: [String: Any] = [
@@ -475,6 +514,7 @@ enum ControlMode: String { case practice, system }
             "frames": receivedFrames, "clicks": scene.clickCount, "drops": scene.dropCount,
             "scrollDistance": scene.scrollDistance, "inputEvents": scene.eventCount,
             "buttonHeld": scene.isPressed, "state": engine.state.rawValue,
+            "isRunning": isRunning, "status": status, "engineReason": engine.reason,
             "sensitivity": sensitivity, "minimumCutoff": smoothing, "controlStyle": controlStyle.rawValue,
             "captureToInferenceP95Ms": sorted.isEmpty ? NSNull() : sorted[min(sorted.count - 1, Int(Double(sorted.count) * 0.95))] as Any,
             "transitions": transitions, "interruptionReasons": interruptionReasons, "osInputEnabled": systemSession, "systemIntentCount": systemEventCount,

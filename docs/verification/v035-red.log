@@ -1,0 +1,45 @@
+[0/1] Planning build
+Building for debugging...
+[0/6] Write sources
+[2/6] Write swift-version--58304C5D6DBC2206.txt
+[4/12] Emitting module AirTouchCoreTests
+[5/12] Compiling AirTouchCoreTests SystemOutputGateTests.swift
+[6/12] Compiling AirTouchCoreTests ResponsivenessTests.swift
+[6/13] Write Objects.LinkFileList
+[7/13] Linking AirTouchPackageTests
+[9/13] Compiling AirTouchApp ContentView.swift
+[10/13] Compiling AirTouchApp AppModel.swift
+[11/13] Emitting module AirTouchApp
+[12/15] Compiling AirTouchApp AirTouchApp.swift
+[13/15] Compiling AirTouchApp SetupView.swift
+[13/16] Write Objects.LinkFileList
+[14/16] Linking AirTouch
+[15/16] Applying AirTouch
+Build complete! (2.95s)
+Test Suite 'Selected tests' started at 2026-09-15 22:51:54.332.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-15 22:51:54.335.
+Test Suite 'ResponsivenessTests' started at 2026-09-15 22:51:54.335.
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testFilterRespondsWithin25MillisecondsDuringMotion]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/ResponsivenessTests.swift:46: error: -[AirTouchCoreTests.ResponsivenessTests testFilterRespondsWithin25MillisecondsDuringMotion] : XCTAssertLessThan failed: ("0.035375951320334956") is not less than ("0.025")
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testFilterRespondsWithin25MillisecondsDuringMotion]' failed (0.112 seconds).
+Test Suite 'ResponsivenessTests' failed at 2026-09-15 22:51:54.447.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.112 (0.113) seconds
+Test Suite 'SystemOutputGateTests' started at 2026-09-15 22:51:54.448.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testContinuousDeliveryDoesNotShutDownBetweenDelayedFrames]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/SystemOutputGateTests.swift:71: error: -[AirTouchCoreTests.SystemOutputGateTests testContinuousDeliveryDoesNotShutDownBetweenDelayedFrames] : XCTAssertTrue failed
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/SystemOutputGateTests.swift:73: error: -[AirTouchCoreTests.SystemOutputGateTests testContinuousDeliveryDoesNotShutDownBetweenDelayedFrames] : XCTAssertEqual failed: ("[]") is not equal to ("[AirTouchCore.InputIntent.move(AirTouchCore.Point(x: 120.0, y: 200.0))]")
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testContinuousDeliveryDoesNotShutDownBetweenDelayedFrames]' failed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testFirstFreshCameraFrameCanPredateOutputSessionStart]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/SystemOutputGateTests.swift:62: error: -[AirTouchCoreTests.SystemOutputGateTests testFirstFreshCameraFrameCanPredateOutputSessionStart] : XCTAssertEqual failed: ("[]") is not equal to ("[AirTouchCore.InputIntent.move(AirTouchCore.Point(x: 110.0, y: 200.0))]")
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testFirstFreshCameraFrameCanPredateOutputSessionStart]' failed (0.000 seconds).
+Test Suite 'SystemOutputGateTests' failed at 2026-09-15 22:51:54.449.
+	 Executed 2 tests, with 3 failures (0 unexpected) in 0.001 (0.002) seconds
+Test Suite 'AirTouchPackageTests.xctest' failed at 2026-09-15 22:51:54.449.
+	 Executed 3 tests, with 4 failures (0 unexpected) in 0.114 (0.114) seconds
+Test Suite 'Selected tests' failed at 2026-09-15 22:51:54.449.
+	 Executed 3 tests, with 4 failures (0 unexpected) in 0.114 (0.117) seconds
+RESPONSIVE_FILTER_LAG_MS=35.375951320334956
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

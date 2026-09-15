@@ -9,6 +9,7 @@ struct TrackingResult {
     let deliveredAt: Double
     let completedAt: Double
     let aspectRatio: Double
+    let pixelFormat: UInt32
     let joints: [AirTouchCore.Joint: Landmark]
     let features: HandFeatures?
     let handCount: Int
@@ -89,13 +90,19 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
         }
         session.addInput(input)
         output.alwaysDiscardsLateVideoFrames = true
-        output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
         output.setSampleBufferDelegate(self, queue: inferenceQueue)
         guard session.canAddOutput(output) else {
             session.removeInput(input)
             throw NSError(domain: "AirTouch", code: 3, userInfo: [NSLocalizedDescriptionKey: "영상 출력을 연결하지 못했습니다"])
         }
         session.addOutput(output)
+        // Vision accepts bi-planar camera buffers. Avoid an unnecessary BGRA
+        // conversion when native video-range YCbCr is available (Apple TN3121).
+        let requestedFormat = ProcessInfo.processInfo.arguments.contains("--camera-bgra")
+            ? kCVPixelFormatType_32BGRA : kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+        let pixelFormat = output.availableVideoPixelFormatTypes.contains(requestedFormat)
+            ? requestedFormat : kCVPixelFormatType_32BGRA
+        output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: pixelFormat]
         if let connection = output.connection(with: .video), connection.isVideoMirroringSupported {
             connection.automaticallyAdjustsVideoMirroring = false
             connection.isVideoMirrored = false
@@ -138,13 +145,13 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
             onResult?(TrackingResult(generation: generation, sequence: sequence, capturedAt: timestamp,
                 deliveredAt: deliveredAt,
                 completedAt: CMClockGetTime(CMClockGetHostTimeClock()).seconds,
-                aspectRatio: width / height,
+                aspectRatio: width / height, pixelFormat: CVPixelBufferGetPixelFormatType(pixelBuffer),
                 joints: joints, features: features, handCount: hands.count, message: message))
         } catch {
             onResult?(TrackingResult(generation: generation, sequence: sequence, capturedAt: timestamp,
                 deliveredAt: deliveredAt,
                 completedAt: CMClockGetTime(CMClockGetHostTimeClock()).seconds,
-                aspectRatio: width / height,
+                aspectRatio: width / height, pixelFormat: CVPixelBufferGetPixelFormatType(pixelBuffer),
                 joints: [:], features: nil, handCount: 0, message: "손 인식 실패: \(error.localizedDescription)"))
         }
     }
