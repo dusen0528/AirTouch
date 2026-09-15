@@ -66,6 +66,9 @@ public struct GestureEngine {
     // is checked independently by lastFrameTime; inference time is not hand loss.
     private var lastValidTime: Double?
     private var activationStart: Double?
+    private var activationIsScroll = false
+    private var clickAnchor: Point?
+    private var clickAnchorUntil: Double?
     private var candidateStart: Double?
     private var scrollStart: Double?
     private var uncertainPoseStart: Double?
@@ -196,19 +199,29 @@ public struct GestureEngine {
 
         switch state {
         case .suspended:
-            guard hand.isPointer, !pinchLatched, hand.isInActivationZone else {
+            let wantsScroll = configuration.controlStyle == .comfortable && hand.isScroll
+            guard hand.isPointer || wantsScroll, !pinchLatched, hand.isInActivationZone else {
                 activationStart = nil; progress = 0; return actions
             }
-            if activationStart == nil { activationStart = time }
+            if activationStart == nil || activationIsScroll != wantsScroll {
+                activationStart = time; activationIsScroll = wantsScroll
+            }
             progress = min(1, (time - activationStart!) / configuration.activationDuration)
             if time - activationStart! >= configuration.activationDuration {
-                state = .pointer; previousPoint = pointer; residual = .zero
-                reason = "검지를 움직이세요 · 핀치로 클릭"; progress = 0; activationStart = nil
+                residual = .zero; progress = 0; activationStart = nil
+                if wantsScroll {
+                    palmFilter.reset(); previousScroll = palmFilter.update(hand.palm, at: time)
+                    state = .scrolling; reason = "손을 위아래로 움직이세요"
+                } else {
+                    state = .pointer; previousPoint = pointer
+                    reason = "검지를 움직이세요 · 핀치로 클릭"
+                }
             }
         case .pointer:
             if pinchLatched {
                 beginPinch(at: time)
             } else if hand.isScroll {
+                clickAnchor = nil; clickAnchorUntil = nil
                 uncertainPoseStart = nil
                 if scrollStart == nil { scrollStart = time }
                 previousPoint = nil
@@ -222,7 +235,7 @@ public struct GestureEngine {
             } else if hand.isPointer {
                 uncertainPoseStart = nil
                 scrollStart = nil; progress = 0
-                actions += move(pointer, dragging: false, interval: frameInterval)
+                actions += movePointer(pointer, hand: hand, at: time, interval: frameInterval)
             } else {
                 if uncertainPoseStart == nil { uncertainPoseStart = time }
                 scrollStart = nil; progress = 0
@@ -231,7 +244,7 @@ public struct GestureEngine {
                 } else if configuration.controlStyle == .comfortable {
                     // Only pointer motion is allowed during this short grace.
                     // Definite pinch, scroll and open-palm poses are handled above.
-                    actions += move(pointer, dragging: false, interval: frameInterval)
+                    actions += movePointer(pointer, hand: hand, at: time, interval: frameInterval)
                 } else {
                     previousPoint = nil; recovering = true
                 }
@@ -241,8 +254,9 @@ public struct GestureEngine {
                 state = .pointer; previousPoint = resetPointer(hand, at: time); candidateStart = nil; progress = 0
                 reason = "짧은 핀치 무시됨"
             } else if let candidateStart {
-                progress = min(1, (time - candidateStart) / configuration.pinchDuration)
-                if time - candidateStart >= configuration.pinchDuration {
+                let duration = configuration.controlStyle == .comfortable ? min(configuration.pinchDuration, 0.05) : configuration.pinchDuration
+                progress = min(1, (time - candidateStart) / duration)
+                if time - candidateStart >= duration {
                     state = .pressed; buttonDown = !secondaryPinch; pressPalm = palm; previousPoint = nil
                     reason = secondaryPinch ? "손가락을 놓으면 우클릭" : "놓으면 클릭 · 손을 움직이면 드래그"; progress = 0
                     if !secondaryPinch { actions.append(.down(cursor)) }
@@ -250,6 +264,9 @@ public struct GestureEngine {
             }
         case .pressed, .dragging:
             if !pinchLatched {
+                if state == .pressed && configuration.controlStyle == .comfortable {
+                    clickAnchor = hand.palm; clickAnchorUntil = time + 0.30
+                }
                 if buttonDown { actions.append(.up(cursor)); buttonDown = false }
                 if secondaryPinch { actions.append(.secondaryClick(cursor)) }
                 state = .pointer; previousPoint = resetPointer(hand, at: time); residual = .zero
@@ -283,7 +300,19 @@ public struct GestureEngine {
                 return actions
             }
             guard hand.isScroll, !pinchLatched else {
-                return actions + suspend("스크롤 종료 · 검지를 펴서 재개하세요")
+                // Uncertain geometry freezes scroll, then a fresh anchor resumes it.
+                // Definite pinches and open palms still stop without a grace period.
+                if configuration.controlStyle == .comfortable, !pinchLatched {
+                    if uncertainPoseStart == nil { uncertainPoseStart = time }
+                    previousScroll = nil
+                    if time - uncertainPoseStart! < configuration.poseGraceDuration { return actions }
+                }
+                return actions + suspend(configuration.controlStyle == .comfortable ? "스크롤 종료 · 두 손가락을 펴서 재개하세요" : "스크롤 종료 · 검지를 펴서 재개하세요")
+            }
+            if uncertainPoseStart != nil {
+                uncertainPoseStart = nil; palmFilter.reset()
+                previousScroll = palmFilter.update(hand.palm, at: time)
+                return actions
             }
             if let previousScroll {
                 let delta = palm.y - previousScroll.y
@@ -308,6 +337,7 @@ public struct GestureEngine {
     }
 
     private mutating func beginPinch(at time: Double) {
+        clickAnchor = nil; clickAnchorUntil = nil
         uncertainPoseStart = nil
         state = .pinchCandidate; candidateStart = time; previousPoint = nil; progress = 0
         scrollStart = nil; secondaryPreparationStart = nil; secondaryArmedUntil = nil
@@ -319,6 +349,17 @@ public struct GestureEngine {
         let index = filter.update(hand.index, at: time)
         let palm = palmFilter.update(hand.palm, at: time)
         return configuration.controlStyle == .comfortable ? palm : index
+    }
+
+    private mutating func movePointer(_ point: Point, hand: HandFeatures, at time: Double, interval: Double) -> [InputIntent] {
+        if let clickAnchor, let clickAnchorUntil, time <= clickAnchorUntil,
+           (hand.palm - clickAnchor).length <= min(0.012, max(0.006, hand.palmScale * 0.06)) {
+            // Absorb finger-release wobble so the next pinch hits the same target.
+            previousPoint = point; residual = .zero
+            return []
+        }
+        clickAnchor = nil; clickAnchorUntil = nil
+        return move(point, dragging: false, interval: interval)
     }
 
     private mutating func move(_ point: Point, dragging: Bool, interval: Double) -> [InputIntent] {
@@ -344,7 +385,8 @@ public struct GestureEngine {
     private mutating func suspend(_ reason: String) -> [InputIntent] {
         let actions: [InputIntent] = buttonDown ? [.up(cursor)] : []
         buttonDown = false; state = .suspended; self.reason = reason; progress = 0
-        activationStart = nil; candidateStart = nil; scrollStart = nil; pinchLatched = false; secondaryPinch = false
+        activationStart = nil; activationIsScroll = false; clickAnchor = nil; clickAnchorUntil = nil
+        candidateStart = nil; scrollStart = nil; pinchLatched = false; secondaryPinch = false
         uncertainPoseStart = nil
         secondaryPreparationStart = nil; secondaryArmedUntil = nil
         previousPoint = nil; pressPalm = nil; previousScroll = nil; residual = .zero
