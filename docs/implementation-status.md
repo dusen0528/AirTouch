@@ -62,3 +62,8 @@
 - 47개 테스트, Release 설치, 서명, 단일 앱 등록 및 임시 패키지 제거를 검증했다. 이전 버전 기록의 테스트 수와 설치 경로는 당시 증거로 보존한다.
 
 검증 기록: [테스트](verification/v032-tests.log), [설치](verification/v032-install.log), [최종 설치 상태](verification/v032-install-state.txt).
+
+
+## v0.3.3 커서와 제스처 사용성
+
+손 중심 추적·속도별 이동·클릭 및 스크롤 떨림 보정을 적용했다. 구체적인 재현 조건과 설치 검증은 [v0.3.3 사용성 검증](verification/v033-usability.md)을 참고한다. 기존 손끝 제어도 설정에서 선택할 수 있다.

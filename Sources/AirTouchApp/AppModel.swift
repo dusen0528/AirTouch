@@ -206,6 +206,11 @@ enum ControlMode: String { case practice, system }
         if let flag = args.firstIndex(of: "--demo-report"), flag + 1 < args.count {
             reportURL = URL(fileURLWithPath: args[flag + 1])
         }
+        // A menu-bar app can launch without restoring its window. Diagnostic
+        // playback must not depend on ContentView.onAppear being called.
+        if args.contains("--demo") {
+            DispatchQueue.main.async { [weak self] in self?.handleLaunchArguments() }
+        }
     }
 
     private static var now: Double { CMClockGetTime(CMClockGetHostTimeClock()).seconds }

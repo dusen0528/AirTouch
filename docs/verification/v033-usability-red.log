@@ -1,0 +1,41 @@
+Building for debugging...
+[0/6] Write sources
+[1/6] Write swift-version--58304C5D6DBC2206.txt
+[3/10] Emitting module AirTouchCoreTests
+[4/10] Compiling AirTouchCoreTests ComfortableControlTests.swift
+[4/10] Write Objects.LinkFileList
+[6/10] Emitting module AirTouchApp
+[7/10] Compiling AirTouchApp AppInstallation.swift
+[7/11] Write Objects.LinkFileList
+[8/11] Linking AirTouchPackageTests
+[9/11] Linking AirTouch
+[10/11] Applying AirTouch
+Build complete! (1.70s)
+Test Suite 'Selected tests' started at 2026-09-15 22:19:30.144.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-15 22:19:30.146.
+Test Suite 'ComfortableControlTests' started at 2026-09-15 22:19:30.146.
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testBendingIndexToPrepareClickDoesNotMoveTarget]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/ComfortableControlTests.swift:33: error: -[AirTouchCoreTests.ComfortableControlTests testBendingIndexToPrepareClickDoesNotMoveTarget] : XCTAssertLessThan failed: ("51.68485309661946") is not less than ("1.0")
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testBendingIndexToPrepareClickDoesNotMoveTarget]' failed (0.120 seconds).
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testSlowMovementIsPreciseWhileFastMovementCoversDistance]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/ComfortableControlTests.swift:47: error: -[AirTouchCoreTests.ComfortableControlTests testSlowMovementIsPreciseWhileFastMovementCoversDistance] : XCTAssertLessThan failed: ("345.26498689538414") is not less than ("200.0") - Aiming needs a lower gain
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/ComfortableControlTests.swift:49: error: -[AirTouchCoreTests.ComfortableControlTests testSlowMovementIsPreciseWhileFastMovementCoversDistance] : XCTAssertGreaterThan failed: ("344.98720939548605") is not greater than ("586.950477722153")
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testSlowMovementIsPreciseWhileFastMovementCoversDistance]' failed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testSmallHandShiftDuringClickDoesNotBecomeDrag]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/ComfortableControlTests.swift:60: error: -[AirTouchCoreTests.ComfortableControlTests testSmallHandShiftDuringClickDoesNotBecomeDrag] : XCTAssertFalse failed
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/ComfortableControlTests.swift:61: error: -[AirTouchCoreTests.ComfortableControlTests testSmallHandShiftDuringClickDoesNotBecomeDrag] : XCTAssertEqual failed: ("Point(x: 302.89357352216024, y: 500.0)") is not equal to ("Point(x: 300.0, y: 500.0)")
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testSmallHandShiftDuringClickDoesNotBecomeDrag]' failed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testStationaryScrollPoseDoesNotCreep]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/ComfortableControlTests.swift:76: error: -[AirTouchCoreTests.ComfortableControlTests testStationaryScrollPoseDoesNotCreep] : XCTAssertLessThan failed: ("35.829750748015094") is not less than ("1.0")
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testStationaryScrollPoseDoesNotCreep]' failed (0.001 seconds).
+Test Suite 'ComfortableControlTests' failed at 2026-09-15 22:19:30.270.
+	 Executed 4 tests, with 6 failures (0 unexpected) in 0.123 (0.124) seconds
+Test Suite 'AirTouchPackageTests.xctest' failed at 2026-09-15 22:19:30.270.
+	 Executed 4 tests, with 6 failures (0 unexpected) in 0.123 (0.124) seconds
+Test Suite 'Selected tests' failed at 2026-09-15 22:19:30.270.
+	 Executed 4 tests, with 6 failures (0 unexpected) in 0.123 (0.126) seconds
+POINTER_TRAVEL_PT slow=345.26498689538414 fast=344.98720939548605
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
