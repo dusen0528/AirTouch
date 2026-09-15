@@ -1,0 +1,24 @@
+Building for debugging...
+[0/5] Write sources
+[1/5] Write swift-version--58304C5D6DBC2206.txt
+[3/5] Compiling AirTouchCoreTests FeatureExtractorTests.swift
+[4/5] Emitting module AirTouchCoreTests
+[4/6] Write Objects.LinkFileList
+[5/6] Linking AirTouchPackageTests
+Build complete! (1.75s)
+Test Suite 'Selected tests' started at 2026-09-15 21:32:38.996.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-15 21:32:38.998.
+Test Suite 'FeatureExtractorTests' started at 2026-09-15 21:32:38.998.
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testPointingHandDoesNotRequireOccludedFoldedFingertips]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/FeatureExtractorTests.swift:40: error: -[AirTouchCoreTests.FeatureExtractorTests testPointingHandDoesNotRequireOccludedFoldedFingertips] : XCTUnwrap failed: expected non-nil value of type "HandFeatures"
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testPointingHandDoesNotRequireOccludedFoldedFingertips]' failed (0.095 seconds).
+Test Suite 'FeatureExtractorTests' failed at 2026-09-15 21:32:39.094.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.095 (0.095) seconds
+Test Suite 'AirTouchPackageTests.xctest' failed at 2026-09-15 21:32:39.094.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.095 (0.095) seconds
+Test Suite 'Selected tests' failed at 2026-09-15 21:32:39.094.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.095 (0.098) seconds
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

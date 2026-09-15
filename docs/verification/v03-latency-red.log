@@ -1,0 +1,26 @@
+[0/1] Planning build
+Building for debugging...
+[0/5] Write sources
+[1/5] Write swift-version--58304C5D6DBC2206.txt
+[3/5] Emitting module AirTouchCoreTests
+[4/5] Compiling AirTouchCoreTests GestureEngineTests.swift
+[4/6] Write Objects.LinkFileList
+[5/6] Linking AirTouchPackageTests
+Build complete! (2.07s)
+Test Suite 'Selected tests' started at 2026-09-15 21:25:07.254.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-15 21:25:07.256.
+Test Suite 'GestureEngineTests' started at 2026-09-15 21:25:07.256.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testContinuousCameraWithInferenceLatencyCanActivateAndMove]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/GestureEngineTests.swift:44: error: -[AirTouchCoreTests.GestureEngineTests testContinuousCameraWithInferenceLatencyCanActivateAndMove] : XCTAssertEqual failed: ("suspended") is not equal to ("pointer") - Continuous valid hands must complete activation despite 100 ms inference time
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/GestureEngineTests.swift:45: error: -[AirTouchCoreTests.GestureEngineTests testContinuousCameraWithInferenceLatencyCanActivateAndMove] : XCTAssertTrue failed - Cursor must move
+Test Case '-[AirTouchCoreTests.GestureEngineTests testContinuousCameraWithInferenceLatencyCanActivateAndMove]' failed (0.104 seconds).
+Test Suite 'GestureEngineTests' failed at 2026-09-15 21:25:07.360.
+	 Executed 1 test, with 2 failures (0 unexpected) in 0.104 (0.104) seconds
+Test Suite 'AirTouchPackageTests.xctest' failed at 2026-09-15 21:25:07.360.
+	 Executed 1 test, with 2 failures (0 unexpected) in 0.104 (0.104) seconds
+Test Suite 'Selected tests' failed at 2026-09-15 21:25:07.360.
+	 Executed 1 test, with 2 failures (0 unexpected) in 0.104 (0.107) seconds
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

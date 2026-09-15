@@ -1,0 +1,44 @@
+Building for debugging...
+[0/5] Write sources
+[1/5] Write swift-version--58304C5D6DBC2206.txt
+[3/8] Emitting module AirTouchCore
+[4/8] Compiling AirTouchCore OneEuroFilter.swift
+[5/8] Compiling AirTouchCore GestureEngine.swift
+[6/18] Emitting module AirTouchCoreTests
+[7/18] Compiling AirTouchCoreTests GestureEngineTests.swift
+[8/18] Compiling AirTouchCoreTests ResponsivenessTests.swift
+[9/18] Compiling AirTouchCoreTests SystemOutputGateTests.swift
+[10/18] Compiling AirTouchCoreTests FeatureExtractorTests.swift
+[10/19] Write Objects.LinkFileList
+[12/19] Compiling AirTouchApp SetupView.swift
+[12/19] Linking AirTouchPackageTests
+[14/19] Emitting module AirTouchApp
+[15/19] Compiling AirTouchApp AppModel.swift
+[16/19] Compiling AirTouchApp AirTouchApp.swift
+[17/19] Compiling AirTouchApp ContentView.swift
+[17/20] Write Objects.LinkFileList
+[18/20] Linking AirTouch
+[19/20] Applying AirTouch
+Build complete! (2.98s)
+Test Suite 'Selected tests' started at 2026-09-15 21:49:50.918.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-15 21:49:50.919.
+Test Suite 'ResponsivenessTests' started at 2026-09-15 21:49:50.919.
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testMovingFilterAddsLessThan50MillisecondsOfLag]' started.
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testMovingFilterAddsLessThan50MillisecondsOfLag]' passed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testScrollReturnsToPointerWithoutAnotherHoldOrJump]' started.
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testScrollReturnsToPointerWithoutAnotherHoldOrJump]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testSingleAmbiguousPoseDoesNotRequireReactivation]' started.
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testSingleAmbiguousPoseDoesNotRequireReactivation]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testStationaryNoiseRemainsSmallAndMotionDoesNotOvershoot]' started.
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testStationaryNoiseRemainsSmallAndMotionDoesNotOvershoot]' passed (0.000 seconds).
+Test Suite 'ResponsivenessTests' passed at 2026-09-15 21:49:50.921.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.001 (0.002) seconds
+Test Suite 'AirTouchPackageTests.xctest' passed at 2026-09-15 21:49:50.921.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.001 (0.002) seconds
+Test Suite 'Selected tests' passed at 2026-09-15 21:49:50.921.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.001 (0.003) seconds
+FILTER_MOTION_LAG_MS=35.375951320334956
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

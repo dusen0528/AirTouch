@@ -1,0 +1,11 @@
+[0/1] Planning build
+Building for production...
+[0/4] Write sources
+[2/4] Write swift-version--58304C5D6DBC2206.txt
+[4/5] Compiling AirTouchCore Demonstration.swift
+[5/6] Compiling AirTouchApp AirTouchApp.swift
+[5/7] Write Objects.LinkFileList
+[6/7] Linking AirTouch
+Build complete! (5.63s)
+/Users/inho/Documents/ChatGPT/AirTouch/build/AirTouch.app: replacing existing signature
+Built: /Users/inho/Documents/ChatGPT/AirTouch/build/AirTouch.app

@@ -1,0 +1,31 @@
+{
+  "appVersion" : "0.1.0",
+  "buttonHeld" : false,
+  "captureToInferenceP95Ms" : null,
+  "clicks" : 1,
+  "drops" : 1,
+  "frames" : 660,
+  "inputEvents" : 275,
+  "minimumCutoff" : 1.5,
+  "note" : "합성 데모는 카메라 정확도나 실제 OS 제어 검증 결과가 아닙니다. 영상은 저장하지 않습니다.",
+  "os" : "Version 26.5 (Build 25F71)",
+  "osInputEnabled" : false,
+  "schemaVersion" : 1,
+  "scrollDistance" : 345.09710754057249,
+  "sensitivity" : 1.6000000000000001,
+  "source" : "synthetic-demo",
+  "state" : "suspended",
+  "transitions" : [
+    "suspended → pointer",
+    "pointer → pinchCandidate",
+    "pinchCandidate → pressed",
+    "pressed → pointer",
+    "pointer → pinchCandidate",
+    "pinchCandidate → pressed",
+    "pressed → dragging",
+    "dragging → pointer",
+    "pointer → scrolling",
+    "scrolling → suspended",
+    "suspended → pointer"
+  ]
+}
