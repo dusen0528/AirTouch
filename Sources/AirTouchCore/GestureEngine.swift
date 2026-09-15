@@ -18,7 +18,19 @@ public enum InputIntent: Equatable, Sendable {
     case move(Point), down(Point), drag(Point), up(Point), scroll(Double), secondaryClick(Point)
 }
 
+public enum ControlStyle: String, CaseIterable, Sendable {
+    case comfortable, direct
+
+    public var label: String { self == .comfortable ? "편안하게" : "손끝으로 직접" }
+    public var detail: String {
+        self == .comfortable
+            ? "검지를 편 채 손 전체를 움직이세요. 천천히 움직이면 정밀하게, 빠르게 움직이면 멀리 이동합니다."
+            : "검지 끝의 움직임을 일정한 속도로 반영합니다."
+    }
+}
+
 public struct GestureConfiguration: Sendable {
+    public var controlStyle: ControlStyle = .comfortable
     public var activationDuration = 0.35
     public var pinchDuration = 0.08
     public var scrollDuration = 0.18
@@ -119,6 +131,7 @@ public struct GestureEngine {
               lastFrameTime.map({ time > $0 }) ?? true else { return [] }
         // Enforce timeouts even when a new frame wins the race with the watchdog.
         var actions = tick(at: now)
+        let frameInterval = lastFrameTime.map { time - $0 } ?? (1 / 30)
         self.sequence = sequence; lastFrameTime = time
         guard let hand, hand.isValid else {
             activationStart = nil; scrollStart = nil; progress = 0
@@ -152,6 +165,7 @@ public struct GestureEngine {
         }
         let index = filter.update(hand.index, at: time)
         let palm = palmFilter.update(hand.palm, at: time)
+        let pointer = configuration.controlStyle == .comfortable ? palm : index
         if state == .pointer || state == .suspended {
             secondaryPinch = hand.secondaryPinchRatio.map { $0 < configuration.pinchEnter && $0 < hand.pinchRatio } ?? false
         }
@@ -169,7 +183,7 @@ public struct GestureEngine {
             if activationStart == nil { activationStart = time }
             progress = min(1, (time - activationStart!) / configuration.activationDuration)
             if time - activationStart! >= configuration.activationDuration {
-                state = .pointer; previousPoint = index; residual = .zero
+                state = .pointer; previousPoint = pointer; residual = .zero
                 reason = "검지를 움직이세요 · 핀치로 클릭"; progress = 0; activationStart = nil
             }
         case .pointer:
@@ -192,7 +206,7 @@ public struct GestureEngine {
             } else if hand.isPointer {
                 uncertainPoseStart = nil
                 scrollStart = nil; progress = 0
-                actions += move(index, dragging: false)
+                actions += move(pointer, dragging: false, interval: frameInterval)
             } else {
                 if uncertainPoseStart == nil { uncertainPoseStart = time }
                 previousPoint = nil; recovering = true
@@ -203,8 +217,7 @@ public struct GestureEngine {
             }
         case .pinchCandidate:
             if !pinchLatched {
-                filter.reset()
-                state = .pointer; previousPoint = filter.update(hand.index, at: time); candidateStart = nil; progress = 0
+                state = .pointer; previousPoint = resetPointer(hand, at: time); candidateStart = nil; progress = 0
                 reason = "짧은 핀치 무시됨"
             } else if let candidateStart {
                 progress = min(1, (time - candidateStart) / configuration.pinchDuration)
@@ -218,8 +231,7 @@ public struct GestureEngine {
             if !pinchLatched {
                 if buttonDown { actions.append(.up(cursor)); buttonDown = false }
                 if secondaryPinch { actions.append(.secondaryClick(cursor)) }
-                filter.reset()
-                state = .pointer; previousPoint = filter.update(hand.index, at: time); residual = .zero
+                state = .pointer; previousPoint = resetPointer(hand, at: time); residual = .zero
                 pressPalm = nil; reason = "입력 해제됨"
             } else if state == .pressed, let pressPalm {
                 let delta = scaled(palm - pressPalm)
@@ -230,10 +242,10 @@ public struct GestureEngine {
                     cursor = (cursor + excess).clamped(width: width, height: height)
                     actions.append(.drag(cursor)); reason = "드래그 중 · 놓으면 완료"
                 }
-            } else if state == .dragging { actions += move(palm, dragging: true) }
+            } else if state == .dragging { actions += move(palm, dragging: true, interval: frameInterval) }
         case .scrolling:
             if hand.isPointer, !pinchLatched {
-                filter.reset(); previousPoint = filter.update(hand.index, at: time)
+                previousPoint = resetPointer(hand, at: time)
                 previousScroll = nil; scrollStart = nil; residual = .zero
                 state = .pointer; reason = "검지를 움직이세요 · 핀치로 클릭"
                 return actions
@@ -254,10 +266,25 @@ public struct GestureEngine {
         Point(delta.x * width, delta.y * height) * configuration.sensitivity
     }
 
-    private mutating func move(_ point: Point, dragging: Bool) -> [InputIntent] {
+    private mutating func resetPointer(_ hand: HandFeatures, at time: Double) -> Point {
+        filter.reset(); palmFilter.reset()
+        let index = filter.update(hand.index, at: time)
+        let palm = palmFilter.update(hand.palm, at: time)
+        return configuration.controlStyle == .comfortable ? palm : index
+    }
+
+    private mutating func move(_ point: Point, dragging: Bool, interval: Double) -> [InputIntent] {
         defer { previousPoint = point }
         guard let previousPoint else { return [] }
-        residual = residual + scaled(point - previousPoint)
+        let delta = point - previousPoint
+        var gain = 1.0
+        if configuration.controlStyle == .comfortable && !dragging {
+            // Gain depends on hand speed, not frame rate or display resolution.
+            let speed = delta.length / max(0.001, interval)
+            let t = min(1, max(0, (speed - 0.025) / 0.195))
+            gain = 0.4 + 1.4 * t * t * (3 - 2 * t)
+        }
+        residual = residual + scaled(delta) * gain
         guard residual.length >= 0.65 else { return [] }
         let next = (cursor + residual).clamped(width: width, height: height)
         residual = .zero

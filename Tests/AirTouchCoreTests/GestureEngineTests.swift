@@ -9,6 +9,8 @@ private struct Session {
     var hand = HandFeatures(index: Point(0.5, 0.4), palm: Point(0.5, 0.6))
 
     init(activate: Bool = true) {
+        // Preserve coverage of the original fingertip control option.
+        engine.configuration.controlStyle = .direct
         engine.start()
         if activate { advance(0.45) }
     }
@@ -88,7 +90,7 @@ final class GestureEngineTests: XCTestCase {
             let capture = Double(frame) / 30
             let arrival = capture + 0.100
             intents += engine.tick(at: arrival - 0.005)
-            let hand = HandFeatures(index: Point(0.4 + Double(frame) * 0.002, 0.4), palm: Point(0.5, 0.6))
+            let hand = HandFeatures(index: Point(0.4 + Double(frame) * 0.002, 0.4), palm: Point(0.5 + Double(frame) * 0.002, 0.6))
             intents += engine.process(hand, sequence: frame, generation: engine.generation,
                                       capturedAt: capture, now: arrival)
         }

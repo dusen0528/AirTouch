@@ -32,7 +32,8 @@ final class SystemOutputGateTests: XCTestCase {
         var delivered: [InputIntent] = []
         for frame in 1...50 {
             let capture = Double(frame) / 30, arrival = capture + 0.1
-            joints[.indexTip] = Landmark(Point(0.42 + Double(frame) * 0.0007, 0.32))
+            // Move the whole pointing hand, including the palm anchor.
+            joints = joints.mapValues { Landmark($0.point + Point(0.0007, 0), confidence: $0.confidence) }
             let hand = try XCTUnwrap(FeatureExtractor.extract(joints, width: 1280, height: 720))
             let watchdogActions = engine.tick(at: arrival - 0.005)
             delivered += gate.accept(watchdogActions, generation: engine.generation, now: arrival - 0.005, permitted: true)
