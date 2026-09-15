@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import AirTouchCore
 
 struct SetupView: View {
     @ObservedObject var model: AppModel
@@ -80,6 +81,7 @@ struct AirTouchSettings: View {
         TabView {
             Form {
                 Section("포인터") {
+                    ControlStylePicker(model: model)
                     LabeledContent("이동 속도") {
                         Slider(value: $model.sensitivity, in: 0.6...3, step: 0.1).frame(width: 200)
                         Text(String(format: "%.1f×", model.sensitivity)).monospacedDigit().frame(width: 42)
@@ -95,7 +97,7 @@ struct AirTouchSettings: View {
                     Toggle("스크롤 방향 반전", isOn: $model.reverseScroll)
                 }.disabled(model.isRunning)
                 Section {
-                    Button("기본값 복원") { model.sensitivity = 1.6; model.smoothing = 1.5; model.reverseScroll = false }
+                    Button("기본값 복원") { model.controlStyle = .comfortable; model.sensitivity = 1.6; model.smoothing = 1.5; model.reverseScroll = false }
                         .disabled(model.isRunning)
                     if model.isRunning { Text("제어를 중지하면 설정을 변경할 수 있습니다.").foregroundStyle(.secondary) }
                 }
@@ -120,7 +122,7 @@ struct AirTouchSettings: View {
                         .foregroundStyle(.secondary)
                 }
             }.formStyle(.grouped).tabItem { Label("일반", systemImage: "gearshape") }
-        }.frame(width: 560, height: 440)
+        }.frame(width: 560, height: 560)
     }
 }
 
@@ -141,6 +143,7 @@ struct DiagnosticsView: View {
                 LabeledContent("macOS 입력", value: model.isSystemControl ? "전송 중" : "꺼짐 · 연습은 앱 안에서만 동작")
                 LabeledContent("손쉬운 사용 권한", value: model.permissions.accessibility && model.permissions.postEvents ? "허용됨" : "허용 필요")
                 LabeledContent("현재 상태", value: model.engine.state.label)
+                LabeledContent("조작 방식", value: model.controlStyle.label)
                 LabeledContent("안내", value: model.status)
                 LabeledContent("처리한 프레임", value: "\(model.receivedFrameCount)")
                 LabeledContent("유효한 손 인식", value: "\(model.validHandFrameCount)")

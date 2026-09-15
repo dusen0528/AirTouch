@@ -61,6 +61,13 @@ enum ControlMode: String { case practice, system }
     var isSystemControl: Bool { isRunning && systemSession && !isDemo }
     var canStartSystem: Bool { permissions.ready && hotKeyReady && !displays.isEmpty }
     var controlDisplay: ControlDisplay? { displays.first { $0.id == selectedDisplayID } }
+    @Published var controlStyle: ControlStyle {
+        didSet {
+            if controlStyle != oldValue { stop(message: "조작 방식을 변경했습니다") }
+            engine.configuration.controlStyle = controlStyle
+            UserDefaults.standard.set(controlStyle.rawValue, forKey: "controlStyle")
+        }
+    }
     @Published var sensitivity: Double {
         didSet { engine.configuration.sensitivity = sensitivity; UserDefaults.standard.set(sensitivity, forKey: "sensitivity") }
     }
@@ -88,10 +95,12 @@ enum ControlMode: String { case practice, system }
 
     init() {
         let defaults = UserDefaults.standard
+        controlStyle = defaults.string(forKey: "controlStyle").flatMap(ControlStyle.init(rawValue:)) ?? .comfortable
         sensitivity = defaults.object(forKey: "sensitivity") as? Double ?? 1.6
         smoothing = defaults.object(forKey: "smoothing") as? Double ?? 1.5
         reverseScroll = defaults.bool(forKey: "reverseScroll")
         engine.configuration.sensitivity = sensitivity
+        engine.configuration.controlStyle = controlStyle
         engine.configuration.smoothing = smoothing
         engine.configuration.scrollMultiplier = reverseScroll ? -1 : 1
         displays = ControlDisplay.current()
@@ -452,7 +461,7 @@ enum ControlMode: String { case practice, system }
             "frames": receivedFrames, "clicks": scene.clickCount, "drops": scene.dropCount,
             "scrollDistance": scene.scrollDistance, "inputEvents": scene.eventCount,
             "buttonHeld": scene.isPressed, "state": engine.state.rawValue,
-            "sensitivity": sensitivity, "minimumCutoff": smoothing,
+            "sensitivity": sensitivity, "minimumCutoff": smoothing, "controlStyle": controlStyle.rawValue,
             "captureToInferenceP95Ms": sorted.isEmpty ? NSNull() : sorted[min(sorted.count - 1, Int(Double(sorted.count) * 0.95))] as Any,
             "transitions": transitions, "osInputEnabled": systemSession, "systemIntentCount": systemEventCount,
             "cameraPermission": permissions.camera == .authorized, "accessibilityPermission": permissions.accessibility,

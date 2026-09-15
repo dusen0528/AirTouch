@@ -121,7 +121,7 @@ struct ContentView: View {
                     LabeledContent("스크롤", value: "\(Int(model.scene.scrollDistance)) pt")
                 }.font(.callout)
                 CameraMonitor(model: model).frame(maxWidth: 380).frame(maxWidth: .infinity)
-                GestureGuide()
+                GestureGuide(style: model.controlStyle)
             }.padding(24).frame(maxWidth: 850).frame(maxWidth: .infinity)
         }
     }
@@ -165,6 +165,9 @@ struct ControlPage: View {
                         Button("사용 준비") { model.showSetup = true }
                     }.font(.callout)
                 }
+                GroupBox("조작 방식") {
+                    ControlStylePicker(model: model).padding(8)
+                }
                 CameraMonitor(model: model)
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 6) {
@@ -181,7 +184,7 @@ struct ControlPage: View {
                 Picker("제어할 화면", selection: $model.selectedDisplayID) {
                     ForEach(model.displays) { Text($0.name).tag($0.id) }
                 }.disabled(model.isRunning)
-                GestureGuide()
+                GestureGuide(style: model.controlStyle)
                 Text("마우스나 트랙패드를 사용하면 손동작 제어가 잠시 멈춥니다. 손을 움직이지 않고 1.5초 기다린 뒤 검지를 펴면 이어서 제어합니다.")
                     .font(.callout).foregroundStyle(.secondary)
                 Text("이 창을 닫아도 제어는 계속됩니다. 메뉴 막대의 AirTouch 또는 ⌃⌥⌘Space로 중지하세요.")
@@ -191,12 +194,31 @@ struct ControlPage: View {
     }
 }
 
+struct ControlStylePicker: View {
+    @ObservedObject var model: AppModel
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Picker("조작 방식", selection: $model.controlStyle) {
+                ForEach(ControlStyle.allCases, id: \.self) { Text($0.label).tag($0) }
+            }
+            .pickerStyle(.segmented).labelsHidden().frame(maxWidth: 320)
+            .disabled(model.isRunning)
+            Text(model.controlStyle.detail).font(.callout).foregroundStyle(.secondary)
+            if model.isRunning {
+                Text("중지한 뒤 조작 방식을 바꿀 수 있습니다.").font(.caption).foregroundStyle(.secondary)
+            }
+        }.frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 struct GestureGuide: View {
+    var style: ControlStyle
     var body: some View {
         GroupBox("손동작") {
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 12) {
-                row("hand.point.up.left", "이동", "검지만 펴고 손을 움직이기")
-                row("hand.pinch", "클릭 · 드래그", "엄지와 검지를 모았다 놓기 · 모은 채 움직이기")
+                row("hand.point.up.left", "이동", style == .comfortable ? "검지를 편 채 손 전체를 움직이기 · 목표 근처에서는 천천히" : "검지 끝을 움직이기")
+                row("hand.pinch", "클릭", "멈춘 뒤 엄지와 검지를 가볍게 모았다 놓기")
+                row("hand.draw", "드래그", "엄지와 검지를 모은 채 손 전체를 움직이기")
                 row("cursorarrow.click.2", "우클릭", "엄지와 중지를 모았다 놓기")
                 row("arrow.up.arrow.down", "스크롤", "검지와 중지를 펴고 위아래로 움직이기")
                 row("hand.raised", "잠시 쉬기", "손바닥 펼치기")
