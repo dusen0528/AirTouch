@@ -96,3 +96,13 @@ macOS 14 이상과 빌드용 Xcode가 필요하다. 외부 패키지 의존성�
 - [제품·기술 설계](docs/airtouch-design.md)
 - [검증 계획](docs/validation-plan.md)
 - [구현·검증 현황](docs/implementation-status.md)
+
+## 버전과 커밋
+
+기능별 한글 커밋과 릴리스 태그로 소스를 구분한다. [변경 이력](CHANGELOG.md)과 [개발 규칙](AGENTS.md)을 따른다. 실제 소스 기준점은 v0.3.1부터이며, 이전 버전 문서는 당시 검증 기록이다.
+
+```bash
+git log --oneline --decorate
+git show v0.3.1
+git diff v0.3.1..v0.3.2
+```
