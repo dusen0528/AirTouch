@@ -6,7 +6,7 @@ if [[ -z "${DEVELOPER_DIR:-}" && -d /Applications/Xcode.app/Contents/Developer ]
 fi
 swift build -c release
 binary_dir="$(swift build -c release --show-bin-path)"
-app_dir="$PWD/build/AirTouch.app"
+app_dir="$PWD/.build/packaging/AirTouch.app"
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
 cp "$binary_dir/AirTouch" "$app_dir/Contents/MacOS/AirTouch"
 cp Resources/Info.plist "$app_dir/Contents/Info.plist"

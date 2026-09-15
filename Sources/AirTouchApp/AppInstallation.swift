@@ -11,7 +11,7 @@ import AppKit
     static func installAndRelaunch(completion: @escaping (String?) -> Void) {
         let fm = FileManager.default, source = Bundle.main.bundleURL
         guard source.pathExtension == "app" else { completion(".app 패키지에서 실행해주세요"); return }
-        let backups = fm.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/AirTouch/Backups", isDirectory: true)
+        let backups = fm.temporaryDirectory.appendingPathComponent("AirTouch-Install", isDirectory: true)
         let backup = backups.appendingPathComponent("\(UUID().uuidString).airtouch-backup", isDirectory: true)
         let stagedContents = destination.deletingLastPathComponent().appendingPathComponent(".airtouch-stage-\(UUID().uuidString)")
         defer { try? fm.removeItem(at: stagedContents) }
@@ -40,7 +40,10 @@ import AppKit
             NSWorkspace.shared.openApplication(at: destination, configuration: configuration) { _, error in
                 Task { @MainActor in
                     if let error { completion("설치됐지만 실행하지 못했습니다: \(error.localizedDescription)") }
-                    else { NSApp.terminate(nil) }
+                    else {
+                        try? FileManager.default.removeItem(at: backup)
+                        NSApp.terminate(nil)
+                    }
                 }
             }
         } catch {
@@ -48,6 +51,7 @@ import AppKit
             if backedUp, !fm.fileExists(atPath: destination.appendingPathComponent("Contents").path) {
                 try? fm.moveItem(at: backup.appendingPathComponent("Contents"), to: destination.appendingPathComponent("Contents"))
             }
+            if !fm.fileExists(atPath: backup.appendingPathComponent("Contents").path) { try? fm.removeItem(at: backup) }
             completion("설치 실패: \(error.localizedDescription)")
         }
     }

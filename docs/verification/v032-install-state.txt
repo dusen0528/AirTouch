@@ -1,0 +1,7 @@
+Version: 0.3.2
+Registered apps: 1
+Path: /Users/inho/Applications/AirTouch.app
+Running instances: 1
+Temporary package: removed
+Old backup bundles: 0
+SHA256: f5a41f59322d6f17e56a1394e7749af59996a1ee03c4fce088c2cbf1833ec877

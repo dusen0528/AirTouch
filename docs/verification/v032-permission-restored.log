@@ -1,0 +1,15 @@
+2026-09-15 22:10:30.538 Df tccd[394:3a07db] [com.apple.TCC:access] AUTHREQ_CTX: msgID=38169.1, function=<private>, service=kTCCServiceListenEvent, preflight=yes, query=1, client_dict=(null), daemon_dict=<private>
+2026-09-15 22:10:30.540 Df tccd[394:3a07db] [com.apple.TCC:access] AUTHREQ_SUBJECT: msgID=38169.1, subject=dev.airtouch.mac,
+2026-09-15 22:10:30.542 Df tccd[394:3a07db] [com.apple.TCC:access] AUTHREQ_RESULT: msgID=38169.1, authValue=2, authReason=4, authVersion=1, desired_auth=0, error=(null),
+2026-09-15 22:10:30.597 Df tccd[23859:3a07ae] [com.apple.TCC:access] AUTHREQ_CTX: msgID=38169.2, function=<private>, service=kTCCServiceCamera, preflight=yes, query=1, client_dict=(null), daemon_dict=<private>
+2026-09-15 22:10:30.603 Df tccd[23859:3a07ae] [com.apple.TCC:access] AUTHREQ_SUBJECT: msgID=38169.2, subject=dev.airtouch.mac,
+2026-09-15 22:10:30.606 Df tccd[23859:3a07ae] [com.apple.TCC:access] AUTHREQ_RESULT: msgID=38169.2, authValue=2, authReason=2, authVersion=1, desired_auth=0, error=(null),
+2026-09-15 22:10:30.606 Df tccd[394:3a0656] [com.apple.TCC:access] AUTHREQ_CTX: msgID=38169.3, function=<private>, service=kTCCServiceAccessibility, preflight=yes, query=1, client_dict=(null), daemon_dict=<private>
+2026-09-15 22:10:30.607 Df tccd[394:3a0656] [com.apple.TCC:access] AUTHREQ_SUBJECT: msgID=38169.3, subject=dev.airtouch.mac,
+2026-09-15 22:10:30.610 Df tccd[394:3a0656] [com.apple.TCC:access] AUTHREQ_RESULT: msgID=38169.3, authValue=2, authReason=4, authVersion=1, desired_auth=0, error=(null),
+2026-09-15 22:10:30.611 Df tccd[394:3a07db] [com.apple.TCC:access] AUTHREQ_CTX: msgID=38169.4, function=<private>, service=kTCCServicePostEvent, preflight=yes, query=1, client_dict=(null), daemon_dict=<private>
+2026-09-15 22:10:30.612 Df tccd[394:3a07db] [com.apple.TCC:access] AUTHREQ_SUBJECT: msgID=38169.4, subject=dev.airtouch.mac,
+2026-09-15 22:10:30.614 Df tccd[394:3a07db] [com.apple.TCC:access] AUTHREQ_RESULT: msgID=38169.4, authValue=2, authReason=4, authVersion=1, desired_auth=0, error=(null),
+2026-09-15 22:10:40.315 Df tccd[23859:3a07ae] [com.apple.TCC:access] AUTHREQ_CTX: msgID=38169.7, function=<private>, service=kTCCServiceMicrophone, preflight=yes, query=1, client_dict=(null), daemon_dict=<private>
+2026-09-15 22:10:40.316 Df tccd[23859:3a07ae] [com.apple.TCC:access] AUTHREQ_SUBJECT: msgID=38169.7, subject=dev.airtouch.mac,
+2026-09-15 22:10:40.318 Df tccd[23859:3a07ae] [com.apple.TCC:access] AUTHREQ_RESULT: msgID=38169.7, authValue=1, authReason=0, authVersion=1, desired_auth=0, error=(null),

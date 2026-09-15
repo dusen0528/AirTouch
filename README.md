@@ -2,7 +2,7 @@
 
 MacBook 내장 카메라로 macOS의 커서 이동, 클릭, 더블클릭, 우클릭, 드래그, 세로 스크롤을 수행하는 메뉴바 앱.
 
-**v0.3.1: 기본 macOS 창·사이드바·도구 막대·설정 창으로 UI를 교체하고, 커서 활성화, 움직임 보정 지연, 자세 전환 시 멈춤을 개선했다.** 실제 손동작의 인식률·피로도·앱별 입력 반응은 별도 실기기 검증 항목이다. 합성 데모 결과를 카메라 성능으로 표시하지 않는다.
+**v0.3.2: 기본 macOS 창·사이드바·도구 막대·설정 창으로 UI를 교체하고, 커서 활성화, 움직임 보정 지연, 자세 전환 시 멈춤을 개선했다.** 실제 손동작의 인식률·피로도·앱별 입력 반응은 별도 실기기 검증 항목이다. 합성 데모 결과를 카메라 성능으로 표시하지 않는다.
 
 ## 설치와 실행
 
@@ -10,14 +10,16 @@ MacBook 내장 카메라로 macOS의 커서 이동, 클릭, 더블클릭, 우클
 ./scripts/install-app.sh
 ```
 
-기본 설치 위치는 `~/Applications/AirTouch.app`이다. 기존 AirTouch가 있으면 종료 후 다시 실행한다. 기존 버전의 Contents는 `~/Library/Application Support/AirTouch/Backups`의 `.airtouch-backup` 폴더에 보존한다. 다른 앱은 덮어쓰지 않는다.
+기본 설치 위치는 `~/Applications/AirTouch.app`이다. 기존 AirTouch가 있으면 종료 후 다시 실행한다. 이전 Contents는 설치 중에만 임시 보관하고, 새 앱의 서명 검증과 설치 등록이 성공하면 정리한다. 실패하면 이전 Contents를 복원한다. 다른 앱은 덮어쓰지 않는다.
 
 직접 빌드해 실행할 수도 있다.
 
 ```bash
 ./scripts/build-app.sh
-open build/AirTouch.app
+open .build/packaging/AirTouch.app
 ```
+
+직접 빌드는 `.build/packaging/AirTouch.app`에 임시 패키지를 만든다. 일반 사용은 설치 스크립트를 이용하면 설치 후 이 패키지가 삭제되어 실행 앱이 하나만 남는다.
 
 개발 폴더에서 실행하면 첫 안내의 **설치하고 다시 열기** 버튼으로 홈 폴더의 응용 프로그램에 복사할 수 있다. 권한을 허용하기 전에 사용할 설치 위치를 정하는 것을 권장한다.
 
@@ -68,7 +70,7 @@ open build/AirTouch.app
 ./scripts/test.sh
 
 # 앱을 완전히 종료한 뒤 실행
-open build/AirTouch.app --args --demo --demo-report /tmp/airtouch-demo.json
+open .build/packaging/AirTouch.app --args --demo --demo-report /tmp/airtouch-demo.json
 ```
 
 **인식 상태 → 인식 기록 저장**은 로컬 JSON으로 상태 전이, 입력 요청 수, 권한 상태, 처리 시간, 최근 600프레임과 마지막 동작 1,800프레임의 손 좌표·타이밍을 저장한다. 기록에는 유효 손 인식 비율, 지연으로 제외한 프레임 수, 물리 마우스에 양보한 횟수도 포함된다. 영상은 저장하지 않는다. 카메라 처리 시간은 캡처부터 Vision 완료까지의 값이며 전체 체감 지연과 다르다. 시스템 입력 요청 수는 대상 앱의 처리 성공 횟수를 뜻하지 않는다.

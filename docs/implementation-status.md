@@ -51,4 +51,14 @@
 
 앱을 정상 종료한 뒤 `tccutil reset Accessibility dev.airtouch.mac`으로 해당 앱의 손쉬운 사용 등록만 초기화했다. 카메라, 다른 앱, 전역 권한은 초기화하지 않았다. 시스템 설정에서 이전 AirTouch 항목이 제거된 것도 확인했다. 안내 문구를 ‘토글’에서 ‘기존 항목 제거 후 현재 앱 다시 추가’로 수정해 개발 서명으로 설치했다.
 
-재등록 단계에서 사용자가 Touch ID 인증을 완료했다. 시스템 설정에서 AirTouch가 다시 표시되고 스위치가 켜진 상태를 확인했다. 현재 앱의 런타임 권한 승인은 최종 재시작 뒤 별도로 확인한다. [원인 로그](verification/permission-signature-mismatch.log).
+재등록 단계에서 사용자가 Touch ID 인증을 완료했다. 시스템 설정에서 AirTouch가 다시 표시되고 스위치가 켜진 상태를 확인했다. v0.3.2 설치 후 재시작한 앱의 카메라·손쉬운 사용·입력 이벤트 권한 조회에서 authValue=2 승인 응답을 확인했고, 이전 code requirement 불일치 오류가 이번 실행에는 없었다. 실제 손 기반 마우스 조작 성공과는 별도의 권한 복구 검증이다. [원인 로그](verification/permission-signature-mismatch.log), [재실행 승인 로그](verification/v032-permission-restored.log). 같은 로그의 마이크 조회는 미허용 상태이며 손동작 제어에 마이크는 사용하지 않는다.
+
+
+## v0.3.2 단일 앱 설치와 Git 이력
+
+- 실행 앱은 `~/Applications/AirTouch.app` 하나다. 동일한 해시의 프로젝트 빌드 복사본과 이전 `.airtouch-backup` 7개를 휴지통으로 옮겼다. 복구 가능하며 다른 앱은 이동하지 않았다.
+- 빌드 패키지는 `.build/packaging/AirTouch.app`에 만들고 설치 성공 후 제거한다. 설치 전 버전은 트랜잭션 동안만 보관하며 실패 시 복원한다.
+- 기존에 커밋이 없었으므로 실제 확인 가능한 v0.3.1을 최초 기준점으로 기록했다. 이번 권한·설치·개발 규칙 변경은 기능별 한글 커밋으로 분리한다.
+- 47개 테스트, Release 설치, 서명, 단일 앱 등록 및 임시 패키지 제거를 검증했다. 이전 버전 기록의 테스트 수와 설치 경로는 당시 증거로 보존한다.
+
+검증 기록: [테스트](verification/v032-tests.log), [설치](verification/v032-install.log), [최종 설치 상태](verification/v032-install-state.txt).

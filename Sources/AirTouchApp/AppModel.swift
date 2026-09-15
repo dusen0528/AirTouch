@@ -447,7 +447,7 @@ enum ControlMode: String { case practice, system }
     private func writeReport(to url: URL) throws {
         let sorted = inferenceLatencies.sorted()
         let report: [String: Any] = [
-            "schemaVersion": 4, "appVersion": "0.3.1", "source": source == "꺼짐" ? "none" : isDemo ? "synthetic-demo" : "camera",
+            "schemaVersion": 4, "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development", "source": source == "꺼짐" ? "none" : isDemo ? "synthetic-demo" : "camera",
             "os": ProcessInfo.processInfo.operatingSystemVersionString,
             "frames": receivedFrames, "clicks": scene.clickCount, "drops": scene.dropCount,
             "scrollDistance": scene.scrollDistance, "inputEvents": scene.eventCount,
