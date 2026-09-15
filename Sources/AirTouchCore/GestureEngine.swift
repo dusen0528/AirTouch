@@ -61,6 +61,7 @@ public struct GestureEngine {
     private var height = 440.0
     private var sequence = -1
     private var lastFrameTime: Double?
+    private var lastFrameArrival: Double?
     // Hand loss measures time without a delivered valid observation. Capture age
     // is checked independently by lastFrameTime; inference time is not hand loss.
     private var lastValidTime: Double?
@@ -70,6 +71,8 @@ public struct GestureEngine {
     private var uncertainPoseStart: Double?
     private var pinchLatched = false
     private var secondaryPinch = false
+    private var secondaryPreparationStart: Double?
+    private var secondaryArmedUntil: Double?
     private var buttonDown = false
     private var lastHand: HandFeatures?
     private var previousPoint: Point?
@@ -93,7 +96,7 @@ public struct GestureEngine {
 
     @discardableResult public mutating func start() -> [InputIntent] {
         let actions = suspend("검지만 펴고 잠시 유지하세요")
-        generation += 1; sequence = -1; lastFrameTime = nil; lastValidTime = nil
+        generation += 1; sequence = -1; lastFrameTime = nil; lastFrameArrival = nil; lastValidTime = nil
         enabled = true; lastHand = nil
         return actions
     }
@@ -114,7 +117,11 @@ public struct GestureEngine {
 
     public mutating func tick(at time: Double) -> [InputIntent] {
         guard enabled else { return [] }
-        if let lastFrameTime, time - lastFrameTime >= configuration.frameTimeout {
+        // Valid observations may arrive in bursts after capture/Vision latency.
+        // Pointer liveness follows delivery; held input retains its stricter
+        // capture-age deadline. New input still rejects captures >= 200 ms old.
+        let frameWatchdogTime = buttonDown ? lastFrameTime : lastFrameArrival
+        if let frameWatchdogTime, time - frameWatchdogTime >= configuration.frameTimeout {
             return suspend("영상이 멈췄습니다. 입력을 해제했습니다")
         }
         if let lastValidTime, time - lastValidTime >= configuration.handLossTimeout {
@@ -132,9 +139,10 @@ public struct GestureEngine {
         // Enforce timeouts even when a new frame wins the race with the watchdog.
         var actions = tick(at: now)
         let frameInterval = lastFrameTime.map { time - $0 } ?? (1 / 30)
-        self.sequence = sequence; lastFrameTime = time
+        self.sequence = sequence; lastFrameTime = time; lastFrameArrival = now
         guard let hand, hand.isValid else {
             activationStart = nil; scrollStart = nil; progress = 0
+            secondaryPreparationStart = nil; secondaryArmedUntil = nil
             recovering = true
             if state == .pinchCandidate { actions += suspend("손 전체를 보여주세요") }
             return actions
@@ -166,8 +174,19 @@ public struct GestureEngine {
         let index = filter.update(hand.index, at: time)
         let palm = palmFilter.update(hand.palm, at: time)
         let pointer = configuration.controlStyle == .comfortable ? palm : index
-        if state == .pointer || state == .suspended {
-            secondaryPinch = hand.secondaryPinchRatio.map { $0 < configuration.pinchEnter && $0 < hand.pinchRatio } ?? false
+        if state == .pointer || state == .scrolling {
+            // A folded middle finger can sit next to the thumb during ordinary
+            // pointing. Require an intentional two-finger preparation first.
+            if hand.isScroll, hand.isPinchReliable,
+               hand.secondaryPinchRatio.map({ $0 > configuration.pinchExit }) == true,
+               hand.pinchRatio > configuration.pinchExit {
+                if secondaryPreparationStart == nil { secondaryPreparationStart = time }
+                if time - secondaryPreparationStart! >= 0.10 { secondaryArmedUntil = time + 0.7 }
+            } else { secondaryPreparationStart = nil }
+        }
+        if state == .pointer || state == .suspended || state == .scrolling {
+            let secondaryReady = configuration.controlStyle == .direct || (secondaryArmedUntil.map { time <= $0 } ?? false)
+            secondaryPinch = secondaryReady && (hand.secondaryPinchRatio.map { $0 < configuration.pinchEnter && $0 < hand.pinchRatio } ?? false)
         }
         let ratio = secondaryPinch ? (hand.secondaryPinchRatio ?? 1) : hand.pinchRatio
         if hand.isPinchReliable && ratio < configuration.pinchEnter { pinchLatched = true }
@@ -188,10 +207,7 @@ public struct GestureEngine {
             }
         case .pointer:
             if pinchLatched {
-                uncertainPoseStart = nil
-                state = .pinchCandidate; candidateStart = time; previousPoint = nil; progress = 0
-                scrollStart = nil
-                reason = secondaryPinch ? "엄지와 중지를 모으면 우클릭" : "핀치를 잠시 유지하세요"
+                beginPinch(at: time)
             } else if hand.isScroll {
                 uncertainPoseStart = nil
                 if scrollStart == nil { scrollStart = time }
@@ -209,10 +225,15 @@ public struct GestureEngine {
                 actions += move(pointer, dragging: false, interval: frameInterval)
             } else {
                 if uncertainPoseStart == nil { uncertainPoseStart = time }
-                previousPoint = nil; recovering = true
                 scrollStart = nil; progress = 0
                 if time - uncertainPoseStart! >= configuration.poseGraceDuration {
                     actions += suspend("검지만 펴면 다시 시작합니다")
+                } else if configuration.controlStyle == .comfortable {
+                    // Only pointer motion is allowed during this short grace.
+                    // Definite pinch, scroll and open-palm poses are handled above.
+                    actions += move(pointer, dragging: false, interval: frameInterval)
+                } else {
+                    previousPoint = nil; recovering = true
                 }
             }
         case .pinchCandidate:
@@ -250,6 +271,11 @@ public struct GestureEngine {
                 }
             } else if state == .dragging { actions += move(palm, dragging: true, interval: frameInterval) }
         case .scrolling:
+            if secondaryPinch, pinchLatched {
+                previousScroll = nil
+                beginPinch(at: time)
+                return actions
+            }
             if hand.isPointer, !pinchLatched {
                 previousPoint = resetPointer(hand, at: time)
                 previousScroll = nil; scrollStart = nil; residual = .zero
@@ -279,6 +305,13 @@ public struct GestureEngine {
 
     private func scaled(_ delta: Point) -> Point {
         Point(delta.x * width, delta.y * height) * configuration.sensitivity
+    }
+
+    private mutating func beginPinch(at time: Double) {
+        uncertainPoseStart = nil
+        state = .pinchCandidate; candidateStart = time; previousPoint = nil; progress = 0
+        scrollStart = nil; secondaryPreparationStart = nil; secondaryArmedUntil = nil
+        reason = secondaryPinch ? "엄지와 중지를 모으면 우클릭" : "핀치를 잠시 유지하세요"
     }
 
     private mutating func resetPointer(_ hand: HandFeatures, at time: Double) -> Point {
@@ -313,6 +346,7 @@ public struct GestureEngine {
         buttonDown = false; state = .suspended; self.reason = reason; progress = 0
         activationStart = nil; candidateStart = nil; scrollStart = nil; pinchLatched = false; secondaryPinch = false
         uncertainPoseStart = nil
+        secondaryPreparationStart = nil; secondaryArmedUntil = nil
         previousPoint = nil; pressPalm = nil; previousScroll = nil; residual = .zero
         filter.reset(); palmFilter.reset(); recovering = false
         return actions

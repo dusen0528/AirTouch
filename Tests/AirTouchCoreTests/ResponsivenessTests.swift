@@ -32,8 +32,8 @@ final class ResponsivenessTests: XCTestCase {
         }
     }
 
-    func testSingleAmbiguousPoseDoesNotRequireReactivation() {
-        var engine = GestureEngine(); engine.start()
+    func testDirectControlSingleAmbiguousPoseDoesNotRequireReactivation() {
+        var engine = GestureEngine(); engine.configuration.controlStyle = .direct; engine.start()
         var hand = HandFeatures(index: Point(0.5, 0.4), palm: Point(0.5, 0.6))
         for frame in 0..<18 {
             _ = engine.process(hand, sequence: frame, generation: engine.generation, capturedAt: Double(frame) / 30, now: Double(frame) / 30)
