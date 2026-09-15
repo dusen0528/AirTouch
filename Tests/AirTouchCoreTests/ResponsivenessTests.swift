@@ -32,6 +32,20 @@ final class ResponsivenessTests: XCTestCase {
         }
     }
 
+    func testFilterRespondsWithin25MillisecondsDuringMotion() {
+        var filter = OneEuroFilter()
+        var lag: [Double] = []
+        for frame in 0..<90 {
+            let t = Double(frame) / 30
+            let input = Point(0.1 + t * 0.25, 0.4)
+            let output = filter.update(input, at: t)
+            if frame > 30 { lag.append((input.x - output.x) / 0.25) }
+        }
+        let mean = lag.reduce(0, +) / Double(lag.count)
+        print("RESPONSIVE_FILTER_LAG_MS=\(mean * 1000)")
+        XCTAssertLessThan(mean, 0.025)
+    }
+
     func testDirectControlSingleAmbiguousPoseDoesNotRequireReactivation() {
         var engine = GestureEngine(); engine.configuration.controlStyle = .direct; engine.start()
         var hand = HandFeatures(index: Point(0.5, 0.4), palm: Point(0.5, 0.6))

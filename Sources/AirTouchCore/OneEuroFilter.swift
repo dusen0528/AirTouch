@@ -5,7 +5,7 @@ public struct OneEuroFilter {
     public var minimumCutoff = 1.5
     // Coordinates are normalized, so motion speeds are fractions per second.
     // Raise cutoff during deliberate motion without removing idle smoothing.
-    public var beta = 12.0
+    public var beta = 24.0
     private var raw: Point?
     private var value: Point?
     private var derivative = Point.zero
