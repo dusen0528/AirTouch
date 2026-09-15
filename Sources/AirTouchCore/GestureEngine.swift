@@ -234,11 +234,17 @@ public struct GestureEngine {
                 state = .pointer; previousPoint = resetPointer(hand, at: time); residual = .zero
                 pressPalm = nil; reason = "입력 해제됨"
             } else if state == .pressed, let pressPalm {
-                let delta = scaled(palm - pressPalm)
-                if delta.length > configuration.dragThreshold {
+                let handDelta = palm - pressPalm
+                let delta = scaled(handDelta)
+                // Click tolerance follows hand size, so a larger display or
+                // pointer speed does not turn the same small shift into a drag.
+                let comfortable = configuration.controlStyle == .comfortable
+                let distance = comfortable ? handDelta.length : delta.length
+                let threshold = comfortable ? min(0.025, max(0.008, hand.palmScale * 0.10)) : configuration.dragThreshold
+                if distance > threshold {
                     if secondaryPinch { return actions + suspend("손이 움직여 우클릭을 취소했습니다") }
                     state = .dragging; previousPoint = palm; residual = .zero
-                    let excess = delta * ((delta.length - configuration.dragThreshold) / delta.length)
+                    let excess = delta * ((distance - threshold) / distance)
                     cursor = (cursor + excess).clamped(width: width, height: height)
                     actions.append(.drag(cursor)); reason = "드래그 중 · 놓으면 완료"
                 }
@@ -254,10 +260,19 @@ public struct GestureEngine {
                 return actions + suspend("스크롤 종료 · 검지를 펴서 재개하세요")
             }
             if let previousScroll {
-                let amount = (palm.y - previousScroll.y) * height * configuration.scrollMultiplier * 2
+                let delta = palm.y - previousScroll.y
+                let tolerance = configuration.controlStyle == .comfortable
+                    ? min(0.006, max(0.0015, hand.palmScale * 0.015)) : 0
+                // Keep a small, reversible slack around the scroll anchor.
+                // Slow intentional travel still accumulates beyond this slack.
+                guard abs(delta) > tolerance else { return actions }
+                let travel = delta - (delta > 0 ? tolerance : -tolerance)
+                let amount = travel * height * configuration.scrollMultiplier * 2
                 if abs(amount) > 0.001 { actions.append(.scroll(amount)) }
+                self.previousScroll = Point(palm.x, previousScroll.y + travel)
+            } else {
+                previousScroll = palm
             }
-            previousScroll = palm
         }
         return actions
     }
