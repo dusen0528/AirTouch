@@ -19,6 +19,7 @@ struct TrackingResult: Sendable {
     var captureWidth: Int = 0
     var captureHeight: Int = 0
     var captureDrops: [String: Int] = [:]
+    var captureConfiguration: [String: String] = [:]
 }
 
 /// Session and inference each have a serial queue. Late capture frames are dropped.
@@ -34,7 +35,15 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     private var generation = 0 // Accessed only on inferenceQueue.
     private var sequence = 0
     private var captureDrops: [String: Int] = [:] // Accessed only on inferenceQueue.
+    private var configurationSnapshot: [String: String] = [:] // inferenceQueue only.
     private var configured = false // Accessed only on sessionQueue.
+    private var captureDevice: AVCaptureDevice? // sessionQueue only.
+    private var selectedFormat: AVCaptureDevice.Format? // sessionQueue only.
+    private var lockedDevice: AVCaptureDevice? // Held only during camera capture.
+    private var configurationNote = "" // sessionQueue only.
+    private var requestedSize: (width: Int32, height: Int32) {
+        ProcessInfo.processInfo.arguments.contains("--camera-480p") ? (640, 480) : (1280, 720)
+    }
     private var observers: [NSObjectProtocol] = []
 
     override init() {
@@ -42,10 +51,20 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
         handRequest.maximumHandCount = 2
     }
 
+    deinit {
+        observers.forEach(NotificationCenter.default.removeObserver)
+        let session = session, device = lockedDevice
+        sessionQueue.async {
+            session.stopRunning()
+            device?.unlockForConfiguration()
+        }
+    }
+
     func start(generation: Int) {
         sessionQueue.async { [weak self] in
             guard let self else { return }
             self.session.stopRunning()
+            self.releaseCaptureFormatLock()
             self.inferenceQueue.sync {
                 self.generation = generation
                 self.sequence = 0
@@ -53,10 +72,14 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
             }
             do {
                 if !self.configured { try self.configure() }
+                else { try self.retainCaptureFormatLock() }
                 self.observeSession(generation: generation)
                 self.session.startRunning()
+                if !self.session.isRunning { self.releaseCaptureFormatLock() }
+                self.updateConfigurationSnapshot()
                 self.onStatus?(generation, self.session.isRunning ? "카메라 연결됨" : "카메라를 시작하지 못했습니다", !self.session.isRunning)
             } catch {
+                self.releaseCaptureFormatLock()
                 self.onStatus?(generation, error.localizedDescription, true)
             }
         }
@@ -68,6 +91,7 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
             self.observers.forEach(NotificationCenter.default.removeObserver)
             self.observers.removeAll()
             self.session.stopRunning()
+            self.releaseCaptureFormatLock()
         }
     }
 
@@ -91,20 +115,16 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
             if !configured {
                 session.outputs.forEach(session.removeOutput)
                 session.inputs.forEach(session.removeInput)
+                releaseCaptureFormatLock()
             }
             session.commitConfiguration()
+            if configured { updateConfigurationSnapshot() }
         }
-        // Keep the recognition resolution unchanged until both timing and hand
-        // accuracy are measured. This diagnostic flag permits like-for-like
-        // 480p/720p comparisons using the actual capture buffers.
+        // 720p is the configured target; 480p is a diagnostic comparison. The
+        // active device format and received buffer sizes are reported separately
+        // because a preset label alone does not prove the capture resolution.
         let requestedPreset: AVCaptureSession.Preset = ProcessInfo.processInfo.arguments.contains("--camera-480p")
             ? .vga640x480 : .hd1280x720
-        if session.canSetSessionPreset(requestedPreset) {
-            session.sessionPreset = requestedPreset
-        } else if requestedPreset == .vga640x480 {
-            throw NSError(domain: "AirTouch", code: 4,
-                userInfo: [NSLocalizedDescriptionKey: "이 카메라는 640×480 비교 측정을 지원하지 않습니다"])
-        }
         guard session.canAddInput(input) else {
             throw NSError(domain: "AirTouch", code: 2, userInfo: [NSLocalizedDescriptionKey: "카메라 입력을 연결하지 못했습니다"])
         }
@@ -116,6 +136,27 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
             throw NSError(domain: "AirTouch", code: 3, userInfo: [NSLocalizedDescriptionKey: "영상 출력을 연결하지 못했습니다"])
         }
         session.addOutput(output)
+        // Check the complete input/output topology. On this Mac a 720p/480p
+        // session preset alone still left activeFormat at 1920x1080. Choose the
+        // actual native format too, instead of silently measuring 1080p twice.
+        if session.canSetSessionPreset(requestedPreset) { session.sessionPreset = requestedPreset }
+        let size = requestedSize
+        let matchingFormats = camera.formats.filter { format in
+            let dimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+            return dimensions.width == size.width && dimensions.height == size.height
+                && format.videoSupportedFrameRateRanges.contains { $0.minFrameRate <= 30 && $0.maxFrameRate >= 30 }
+        }
+        let nativeFormat = matchingFormats.first {
+            CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+        } ?? matchingFormats.first
+        if nativeFormat != nil {
+            configurationNote = "요청한 기본 영상 형식과 30fps를 캡처 동안 유지합니다"
+        } else if ProcessInfo.processInfo.arguments.contains("--camera-480p") {
+            throw NSError(domain: "AirTouch", code: 4,
+                userInfo: [NSLocalizedDescriptionKey: "이 카메라는 640×480·30fps 비교 측정을 지원하지 않습니다"])
+        } else {
+            configurationNote = "요청한 1280×720·30fps 형식이 없어 카메라 지원 형식을 사용합니다"
+        }
         // Vision accepts bi-planar camera buffers. Avoid an unnecessary BGRA
         // conversion when native video-range YCbCr is available (Apple TN3121).
         let requestedFormat = ProcessInfo.processInfo.arguments.contains("--camera-bgra")
@@ -127,13 +168,41 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
             connection.automaticallyAdjustsVideoMirroring = false
             connection.isVideoMirrored = false
         }
+        captureDevice = camera
+        selectedFormat = nativeFormat
+        try retainCaptureFormatLock()
+        configured = true
+    }
+
+    private func retainCaptureFormatLock() throws {
+        guard lockedDevice == nil, let camera = captureDevice else { return }
+        try camera.lockForConfiguration()
+        lockedDevice = camera
+        if let selectedFormat { camera.activeFormat = selectedFormat }
         if camera.activeFormat.videoSupportedFrameRateRanges.contains(where: { $0.minFrameRate <= 30 && $0.maxFrameRate >= 30 }) {
-            try camera.lockForConfiguration()
             camera.activeVideoMinFrameDuration = CMTime(value: 1, timescale: 30)
             camera.activeVideoMaxFrameDuration = CMTime(value: 1, timescale: 30)
-            camera.unlockForConfiguration()
         }
-        configured = true
+        // Apple Capture Device Formats: unlike iOS, macOS can automatically
+        // replace activeFormat on commit/start unless this lock is retained.
+        // Balance it on stop, failed start and destruction; never hold it idle.
+    }
+
+    private func releaseCaptureFormatLock() {
+        lockedDevice?.unlockForConfiguration()
+        lockedDevice = nil
+    }
+
+    private func updateConfigurationSnapshot() {
+        guard let camera = captureDevice else { return }
+        let size = requestedSize
+        let active = CMVideoFormatDescriptionGetDimensions(camera.activeFormat.formatDescription)
+        let snapshot = ["requestedWidth": String(size.width), "requestedHeight": String(size.height),
+            "sessionPreset": session.sessionPreset.rawValue,
+            "activeFormatWidth": String(active.width), "activeFormatHeight": String(active.height),
+            "configurationLocked": String(lockedDevice != nil),
+            "note": configurationNote]
+        inferenceQueue.sync { configurationSnapshot = snapshot }
     }
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
@@ -191,14 +260,16 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
                 completedAt: CMClockGetTime(CMClockGetHostTimeClock()).seconds,
                 aspectRatio: width / height, pixelFormat: CVPixelBufferGetPixelFormatType(pixelBuffer),
                 joints: joints, features: features, handCount: hands.count, message: message,
-                captureWidth: Int(width), captureHeight: Int(height), captureDrops: captureDrops))
+                captureWidth: Int(width), captureHeight: Int(height), captureDrops: captureDrops,
+                captureConfiguration: configurationSnapshot))
         } catch {
             onResult?(TrackingResult(generation: generation, sequence: sequence, capturedAt: timestamp,
                 deliveredAt: deliveredAt,
                 completedAt: CMClockGetTime(CMClockGetHostTimeClock()).seconds,
                 aspectRatio: width / height, pixelFormat: CVPixelBufferGetPixelFormatType(pixelBuffer),
                 joints: [:], features: nil, handCount: 0, message: "손 인식 실패: \(error.localizedDescription)",
-                captureWidth: Int(width), captureHeight: Int(height), captureDrops: captureDrops))
+                captureWidth: Int(width), captureHeight: Int(height), captureDrops: captureDrops,
+                captureConfiguration: configurationSnapshot))
         }
     }
 

@@ -12,6 +12,7 @@
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>NSCameraUsageDescription</key><string>손동작을 인식해 Mac의 커서 이동, 클릭, 드래그, 스크롤을 수행합니다. 영상은 Mac에서만 처리하며 저장하거나 전송하지 않습니다.</string>
     <key>NSHighResolutionCapable</key><true/>
+    <key>NSCameraUseContinuityCameraDeviceType</key><true/>
     <key>NSCameraReactionEffectsEnabled</key><false/>
     <key>NSCameraReactionEffectGesturesEnabledDefault</key><false/>
 </dict>
