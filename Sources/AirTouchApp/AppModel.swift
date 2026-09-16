@@ -58,7 +58,7 @@ enum ControlMode: String { case practice, system }
     private var localMouseMonitor: Any?
     private var emergencyKeyMonitor: Any?
     private var systemSession = false
-    var isSystemControl: Bool { isRunning && systemSession && !isDemo }
+    var isSystemControl: Bool { isRunning && systemSession && !isDemo && !isPipelineBenchmark }
     var canStartSystem: Bool { permissions.ready && hotKeyReady && !displays.isEmpty }
     var controlDisplay: ControlDisplay? { displays.first { $0.id == selectedDisplayID } }
     @Published var controlStyle: ControlStyle {
@@ -77,6 +77,7 @@ enum ControlMode: String { case practice, system }
     @Published var reverseScroll: Bool {
         didSet { engine.configuration.scrollMultiplier = reverseScroll ? -1 : 1; UserDefaults.standard.set(reverseScroll, forKey: "reverseScroll") }
     }
+    private lazy var systemTracking = SystemTrackingController(input: isPipelineBenchmark ? BenchmarkInputSink() : systemInput)
     let camera = CameraService()
     // Input processes every delivered result; diagnostics redraw at 20 Hz.
     private var presentationTimer: Timer?
@@ -99,6 +100,10 @@ enum ControlMode: String { case practice, system }
     private var reportURL: URL?
     private var handledLaunchArguments = false
     private var cameraPixelFormat: UInt32 = 0
+    private var captureSize = [0, 0]
+    private var captureDrops: [String: Int] = [:]
+    private var captureConfiguration: [String: String] = [:]
+    private var isPipelineBenchmark: Bool { isCameraBenchmark && ProcessInfo.processInfo.arguments.contains("--pipeline-benchmark") }
     private var isCameraBenchmark: Bool { ProcessInfo.processInfo.arguments.contains("--camera-benchmark") }
     private var terminationSignal: DispatchSourceSignal?
 
@@ -149,7 +154,21 @@ enum ControlMode: String { case practice, system }
             if Self.isEmergencyKey(event) { self?.emergencyStop() }
         }
         let trackingDelivery = self.trackingDelivery
-        camera.onResult = { result in trackingDelivery.submit(result) }
+        let systemTracking = self.systemTracking
+        systemTracking.onProcessed = { [weak self] frame in
+            MainActor.assumeIsolated { self?.receive(frame.result, processed: frame) }
+        }
+        systemTracking.onWatchdogState = { [weak self] state in
+            MainActor.assumeIsolated {
+                guard let self, self.isSystemControl, self.engine.generation == state.engine.generation else { return }
+                self.engine = state.engine
+                self.updateSystemCounters(state.statistics)
+                self.recordTransition(state.before.state)
+            }
+        }
+        camera.onResult = { result in
+            if !systemTracking.submit(result) { trackingDelivery.submit(result) }
+        }
         presentationTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
             // Timer is installed on the main run loop, like the camera watchdog.
             MainActor.assumeIsolated {
@@ -166,9 +185,11 @@ enum ControlMode: String { case practice, system }
         watchdog = Timer.scheduledTimer(withTimeInterval: 0.04, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 guard let self, self.isRunning, !self.isDemo else { return }
-                let previous = self.engine.state
-                self.apply(self.engine.tick(at: Self.now))
-                self.recordTransition(previous)
+                if !self.systemSession {
+                    let previous = self.engine.state
+                    self.apply(self.engine.tick(at: Self.now))
+                    self.recordTransition(previous)
+                }
                 if let started = self.cameraConnectionStartedAt, self.previousFrame == nil, Self.now - started > 8 {
                     self.stop(message: "카메라 영상이 도착하지 않습니다. 다른 카메라 앱을 닫고 다시 시작해주세요")
                 } else if let last = self.previousFrameArrival, Self.now - last > 0.2 {
@@ -255,6 +276,8 @@ enum ControlMode: String { case practice, system }
         clearMetrics(); isRunning = true; source = "macOS 전체 제어"
         status = "2초 뒤 시작합니다 · 검지를 펴서 제어하세요"; needsCameraPermission = false
         handoffUntil = Self.now + 2; outputStarted = false
+        engine = systemTracking.start(engine: engine, display: display, handoffUntil: handoffUntil,
+                                      doubleClickInterval: NSEvent.doubleClickInterval)
         connectCamera(generation: engine.generation)
     }
 
@@ -288,9 +311,9 @@ enum ControlMode: String { case practice, system }
               cg.getIntegerValueField(.eventSourceUserData) != SystemInputDispatcher.eventTag else { return }
         if outputStarted { physicalHandoffCount += 1 }
         // Do not let our own control window's launch click start a competing session.
-        systemInput.stop(); outputStarted = false
-        _ = engine.pause(reason: "마우스에 제어권을 넘겼습니다 · 멈춘 뒤 검지를 펴세요")
         handoffUntil = Self.now + 1.5
+        engine = systemTracking.pause(until: handoffUntil, reason: "마우스에 제어권을 넘겼습니다 · 멈춘 뒤 검지를 펴세요")
+        outputStarted = false
     }
 
     func startCamera() {
@@ -363,8 +386,15 @@ enum ControlMode: String { case practice, system }
 
     func stop(message: String = "제어가 멈췄습니다") {
         demoTimer?.invalidate(); demoTimer = nil
-        systemInput.stop(); outputStarted = false
-        apply(engine.stop(reason: message)); camera.stop()
+        let stopped = systemTracking.stop(reason: message)
+        outputStarted = false
+        if systemSession && !isDemo {
+            // Settings may have changed after a prior stop. A worker snapshot
+            // supplies state, never stale configuration for the next session.
+            let configuration = engine.configuration
+            engine = stopped; engine.configuration = configuration
+        } else { apply(engine.stop(reason: message)) }
+        camera.stop()
         isRunning = false; joints = [:]; pinchRatio = nil; status = message
         cameraConnectionStartedAt = nil
         fps = 0; latency = 0
@@ -384,17 +414,23 @@ enum ControlMode: String { case practice, system }
         scene = PracticeScene()
     }
 
-    private func receive(_ result: TrackingResult) {
+    private func receive(_ result: TrackingResult, processed: ProcessedTrackingFrame? = nil) {
         guard isRunning, !isDemo, result.generation == engine.generation else { return }
         let now = Self.now
-        guard now - result.capturedAt >= 0, now - result.capturedAt < engine.configuration.frameTimeout else {
-            staleFrameCount += 1
+        if let processed { updateSystemCounters(processed.statistics) }
+        guard processed?.accepted ?? (now - result.capturedAt >= 0 && now - result.capturedAt < engine.configuration.frameTimeout) else {
+            if processed == nil { staleFrameCount += 1 }
             status = "영상 처리가 지연되고 있습니다"; return
         }
+        if systemSession, processed == nil { return }
+        let previousState = processed?.before.state ?? engine.state
+        if let processed { engine = processed.engine; outputStarted = processed.outputStarted }
         joints = result.joints; pinchRatio = result.features?.pinchRatio
         if status != result.message { status = result.message }
         cameraAspectRatio = result.aspectRatio
         cameraPixelFormat = result.pixelFormat
+        captureSize = [result.captureWidth, result.captureHeight]; captureDrops = result.captureDrops
+        captureConfiguration = result.captureConfiguration
         latency = max(0, (result.completedAt - result.capturedAt) * 1000)
         inferenceTime = max(0, (result.completedAt - result.deliveredAt) * 1000)
         captureDeliveryTime = max(0, (result.deliveredAt - result.capturedAt) * 1000)
@@ -410,8 +446,13 @@ enum ControlMode: String { case practice, system }
         var trace: [String: Any] = ["sequence": result.sequence, "capturedAt": result.capturedAt,
             "receivedAt": now, "latencyMs": latency, "hands": result.handCount,
             "captureDeliveryMs": captureDeliveryTime, "inferenceMs": inferenceTime, "uiDeliveryMs": uiDeliveryTime,
-            "valid": result.features != nil, "stateBefore": engine.state.rawValue,
-            "message": result.message, "handoff": systemSession && now < handoffUntil]
+            "valid": result.features != nil, "stateBefore": previousState.rawValue,
+            "message": result.message, "handoff": processed?.handoff ?? (systemSession && now < handoffUntil)]
+        if let processed {
+            trace["gestureQueueMs"] = (processed.processingStartedAt - result.completedAt) * 1000
+            trace["gestureProcessingMs"] = (processed.processingCompletedAt - processed.processingStartedAt) * 1000
+            if let submitted = processed.inputSubmittedAt { trace["captureToInputSubmissionMs"] = (submitted - result.capturedAt) * 1000 }
+        }
         if let hand = result.features {
             trace["features"] = ["indexX": hand.index.x, "indexY": hand.index.y,
                 "palmX": hand.palm.x, "palmY": hand.palm.y, "palmScale": hand.palmScale,
@@ -434,17 +475,10 @@ enum ControlMode: String { case practice, system }
                 if activeFrameTrace.count > 1800 { activeFrameTrace.removeFirst() }
             }
         }
-        if systemSession {
-            guard now >= handoffUntil, let display = controlDisplay else { return }
-            if !outputStarted {
-                guard !CGEventSource.buttonState(.combinedSessionState, button: .left),
-                      !CGEventSource.buttonState(.combinedSessionState, button: .right) else { return }
-                let position = CGEvent(source: nil)?.location ?? .zero
-                _ = engine.rebase(to: display.area.local(Point(position.x, position.y)), width: display.area.width, height: display.area.height)
-                systemInput.begin(generation: engine.generation, area: display.area, position: engine.cursor,
-                                  doubleClickInterval: NSEvent.doubleClickInterval)
-                outputStarted = true
-            }
+        if let processed {
+            updateSystemCounters(processed.statistics)
+            recordTransition(processed.before.state)
+            return
         }
         let previous = engine.state
         let actions = engine.process(result.features, sequence: result.sequence, generation: result.generation,
@@ -455,6 +489,13 @@ enum ControlMode: String { case practice, system }
             systemEventCount += actions.count
         } else { apply(actions) }
         recordTransition(previous)
+    }
+
+    private func updateSystemCounters(_ stats: SystemTrackingStatistics) {
+        receivedFrames = stats.acceptedFrames
+        validHandFrameCount = stats.validFrames
+        staleFrameCount = stats.staleFrames
+        systemEventCount = stats.intentCount
     }
 
     private func apply(_ intents: [InputIntent]) {
@@ -474,6 +515,7 @@ enum ControlMode: String { case practice, system }
         interruptionReasons = [:]
         validHandFrameCount = 0; staleFrameCount = 0; physicalHandoffCount = 0; frameTrace = []
         activeFrameTrace = []; lastActiveCapture = nil
+        captureSize = [0, 0]; captureDrops = [:]; captureConfiguration = [:]; cameraPixelFormat = 0
         inferenceTime = 0; captureDeliveryTime = 0; uiDeliveryTime = 0
     }
 
@@ -492,6 +534,10 @@ enum ControlMode: String { case practice, system }
     private func startCameraBenchmark() {
         guard let url = reportURL else { status = "카메라 측정 기록 경로를 지정해주세요"; return }
         startCamera()
+        if isPipelineBenchmark, let display = controlDisplay {
+            systemSession = true; handoffUntil = 0
+            engine = systemTracking.start(engine: engine, display: display, handoffUntil: 0)
+        }
         DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
             guard let self else { return }
             let rows = self.frameTrace.filter { ($0["sequence"] as? Int ?? 0) > 60 }
@@ -501,10 +547,22 @@ enum ControlMode: String { case practice, system }
                 return ["median": sorted[sorted.count / 2], "p95": sorted[min(sorted.count - 1, Int(Double(sorted.count) * 0.95))]]
             }
             let format = String(bytes: (0..<4).reversed().map { UInt8((self.cameraPixelFormat >> ($0 * 8)) & 0xff) }, encoding: .ascii) ?? "unknown"
+            let processing = self.isPipelineBenchmark ? self.systemTracking.statistics : nil
+            func timing(_ value: TrackingLatencyStatistics?) -> Any {
+                guard let value else { return NSNull() }
+                return ["sampleCount": value.sampleCount, "median": value.median, "p95": value.p95, "maximum": value.maximum] as [String: Any]
+            }
             let report: [String: Any] = [
+                "pipelineBenchmark": self.isPipelineBenchmark,
+                "captureToInputSubmissionMs": timing(processing?.captureToSubmissionMs),
+                "inferenceToInputSubmissionMs": timing(processing?.inferenceToSubmissionMs),
+                "gestureProcessingMs": timing(processing?.processingMs),
+                "processedFrames": processing?.acceptedFrames as Any? ?? NSNull(),
                 "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development",
                 "pixelFormat": format, "measuredFrames": rows.count, "coalescedFrames": self.trackingDelivery.replacedCount, "osInputEnabled": false,
                 "cameraRunningAtEnd": self.isRunning, "status": self.status,
+                "captureSize": self.captureSize, "captureDrops": self.captureDrops,
+                "captureConfiguration": self.captureConfiguration,
                 "captureDeliveryMs": stats(rows.compactMap { $0["captureDeliveryMs"] as? Double }),
                 "inferenceMs": stats(rows.compactMap { $0["inferenceMs"] as? Double }),
                 "uiDeliveryMs": stats(rows.compactMap { $0["uiDeliveryMs"] as? Double }),
@@ -522,18 +580,20 @@ enum ControlMode: String { case practice, system }
     private func writeReport(to url: URL) throws {
         let sorted = inferenceLatencies.sorted()
         let report: [String: Any] = [
-            "schemaVersion": 5, "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development", "source": source == "꺼짐" ? "none" : isDemo ? "synthetic-demo" : "camera",
+            "schemaVersion": 6, "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development", "source": source == "꺼짐" ? "none" : isDemo ? "synthetic-demo" : "camera",
             "os": ProcessInfo.processInfo.operatingSystemVersionString,
             "frames": receivedFrames, "clicks": scene.clickCount, "drops": scene.dropCount,
             "scrollDistance": scene.scrollDistance, "inputEvents": scene.eventCount,
-            "buttonHeld": scene.isPressed, "state": engine.state.rawValue,
+            "buttonHeld": systemSession ? engine.isButtonHeld : scene.isPressed, "state": engine.state.rawValue,
             "isRunning": isRunning, "status": status, "engineReason": engine.reason,
             "sensitivity": sensitivity, "minimumCutoff": smoothing, "controlStyle": controlStyle.rawValue,
+            "captureSize": captureSize, "captureDrops": captureDrops, "captureConfiguration": captureConfiguration,
             "captureToInferenceP95Ms": sorted.isEmpty ? NSNull() : sorted[min(sorted.count - 1, Int(Double(sorted.count) * 0.95))] as Any,
             "transitions": transitions, "interruptionReasons": interruptionReasons, "osInputEnabled": systemSession, "systemIntentCount": systemEventCount,
             "cameraPermission": permissions.camera == .authorized, "accessibilityPermission": permissions.accessibility,
             "validHandFrames": validHandFrameCount, "staleFrames": staleFrameCount,
-            "coalescedFrames": trackingDelivery.replacedCount,
+            "coalescedFrames": systemSession ? systemTracking.replacedFrameCount : trackingDelivery.replacedCount,
+            "traceDelivery": systemSession ? "presentation-snapshots" : "received-frames",
             "physicalHandoffs": physicalHandoffCount, "recentFrames": frameTrace,
             "activeFrames": activeFrameTrace,
             "note": "합성 데모는 카메라 정확도나 실제 OS 제어 검증 결과가 아닙니다. 영상은 저장하지 않습니다."
