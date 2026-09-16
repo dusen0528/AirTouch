@@ -8,7 +8,8 @@ let package = Package(
     targets: [
         .target(name: "AirTouchCore"),
         .executableTarget(name: "AirTouchApp", dependencies: ["AirTouchCore"]),
-        .testTarget(name: "AirTouchCoreTests", dependencies: ["AirTouchCore"])
+        .testTarget(name: "AirTouchCoreTests", dependencies: ["AirTouchCore"]),
+        .testTarget(name: "AirTouchAppTests", dependencies: ["AirTouchApp", "AirTouchCore"])
     ],
     swiftLanguageModes: [.v5]
 )

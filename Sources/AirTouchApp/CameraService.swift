@@ -14,6 +14,11 @@ struct TrackingResult: Sendable {
     let features: HandFeatures?
     let handCount: Int
     let message: String
+    // Actual buffer dimensions and cumulative drop counts, for comparisons that
+    // do not need to retain camera frames or hand landmarks.
+    var captureWidth: Int = 0
+    var captureHeight: Int = 0
+    var captureDrops: [String: Int] = [:]
 }
 
 /// Session and inference each have a serial queue. Late capture frames are dropped.
@@ -28,6 +33,7 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     private let output = AVCaptureVideoDataOutput()
     private var generation = 0 // Accessed only on inferenceQueue.
     private var sequence = 0
+    private var captureDrops: [String: Int] = [:] // Accessed only on inferenceQueue.
     private var configured = false // Accessed only on sessionQueue.
     private var observers: [NSObjectProtocol] = []
 
@@ -40,7 +46,11 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
         sessionQueue.async { [weak self] in
             guard let self else { return }
             self.session.stopRunning()
-            self.inferenceQueue.sync { self.generation = generation; self.sequence = 0 }
+            self.inferenceQueue.sync {
+                self.generation = generation
+                self.sequence = 0
+                self.captureDrops.removeAll(keepingCapacity: true)
+            }
             do {
                 if !self.configured { try self.configure() }
                 self.observeSession(generation: generation)
@@ -84,7 +94,17 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
             }
             session.commitConfiguration()
         }
-        if session.canSetSessionPreset(.hd1280x720) { session.sessionPreset = .hd1280x720 }
+        // Keep the recognition resolution unchanged until both timing and hand
+        // accuracy are measured. This diagnostic flag permits like-for-like
+        // 480p/720p comparisons using the actual capture buffers.
+        let requestedPreset: AVCaptureSession.Preset = ProcessInfo.processInfo.arguments.contains("--camera-480p")
+            ? .vga640x480 : .hd1280x720
+        if session.canSetSessionPreset(requestedPreset) {
+            session.sessionPreset = requestedPreset
+        } else if requestedPreset == .vga640x480 {
+            throw NSError(domain: "AirTouch", code: 4,
+                userInfo: [NSLocalizedDescriptionKey: "이 카메라는 640×480 비교 측정을 지원하지 않습니다"])
+        }
         guard session.canAddInput(input) else {
             throw NSError(domain: "AirTouch", code: 2, userInfo: [NSLocalizedDescriptionKey: "카메라 입력을 연결하지 못했습니다"])
         }
@@ -117,6 +137,30 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     }
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        // Vision creates Objective-C temporaries every frame. Bound their
+        // lifetime to this callback instead of the long-lived inference queue.
+        autoreleasepool { process(sampleBuffer) }
+    }
+
+    func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        // TN2445: a discontinuity can represent an unknown number of lost
+        // frames, so these values count callbacks/reasons, not guessed frames.
+        let attachment = CMGetAttachment(sampleBuffer,
+            key: kCMSampleBufferAttachmentKey_DroppedFrameReason, attachmentModeOut: nil) as? String
+        let reason: String
+        if attachment == kCMSampleBufferDroppedFrameReason_FrameWasLate as String {
+            reason = "late"
+        } else if attachment == kCMSampleBufferDroppedFrameReason_OutOfBuffers as String {
+            reason = "outOfBuffers"
+        } else if attachment == kCMSampleBufferDroppedFrameReason_Discontinuity as String {
+            reason = "discontinuity"
+        } else {
+            reason = "unknown"
+        }
+        captureDrops[reason, default: 0] += 1
+    }
+
+    private func process(_ sampleBuffer: CMSampleBuffer) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         // Capture timestamps use the host clock, as does the controller watchdog.
         let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer).seconds
@@ -146,13 +190,15 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
                 deliveredAt: deliveredAt,
                 completedAt: CMClockGetTime(CMClockGetHostTimeClock()).seconds,
                 aspectRatio: width / height, pixelFormat: CVPixelBufferGetPixelFormatType(pixelBuffer),
-                joints: joints, features: features, handCount: hands.count, message: message))
+                joints: joints, features: features, handCount: hands.count, message: message,
+                captureWidth: Int(width), captureHeight: Int(height), captureDrops: captureDrops))
         } catch {
             onResult?(TrackingResult(generation: generation, sequence: sequence, capturedAt: timestamp,
                 deliveredAt: deliveredAt,
                 completedAt: CMClockGetTime(CMClockGetHostTimeClock()).seconds,
                 aspectRatio: width / height, pixelFormat: CVPixelBufferGetPixelFormatType(pixelBuffer),
-                joints: [:], features: nil, handCount: 0, message: "손 인식 실패: \(error.localizedDescription)"))
+                joints: [:], features: nil, handCount: 0, message: "손 인식 실패: \(error.localizedDescription)",
+                captureWidth: Int(width), captureHeight: Int(height), captureDrops: captureDrops))
         }
     }
 
