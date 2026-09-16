@@ -84,12 +84,19 @@ enum ControlMode: String { case practice, system }
             preferences.set(dragLockEnabled, forKey: "dragLockEnabled")
         }
     }
+    @Published var showCursorStatus: Bool {
+        didSet {
+            preferences.set(showCursorStatus, forKey: "showCursorStatus")
+            if !showCursorStatus { cursorOverlay.hide() }
+        }
+    }
     @Published private(set) var isCalibrating = false
     @Published private(set) var calibrationProfile: PersonalCalibrationProfile?
     private(set) var calibration = PersonalCalibrationSession()
     var calibrationSnapshot: PersonalCalibrationSnapshot { calibration.snapshot }
     private lazy var calibrationStore = CalibrationProfileStore(defaults: preferences)
     private let preferences: UserDefaults
+    private let cursorOverlay = CursorStatusOverlay()
     private lazy var systemTracking = SystemTrackingController(input: isPipelineBenchmark ? BenchmarkInputSink() : systemInput)
     let camera = CameraService()
     // Input processes every delivered result; diagnostics redraw at 20 Hz.
@@ -103,6 +110,7 @@ enum ControlMode: String { case practice, system }
     private var demoTime = 0.0
     private var previousFrame: Double?
     private var previousFrameArrival: Double?
+    private var previousValidCapture: Double?
     private var cameraConnectionStartedAt: Double?
     private var receivedFrames = 0
     private var inferenceLatencies: [Double] = []
@@ -131,6 +139,7 @@ enum ControlMode: String { case practice, system }
         smoothing = defaults.object(forKey: "smoothing") as? Double ?? 1.5
         reverseScroll = defaults.bool(forKey: "reverseScroll")
         dragLockEnabled = defaults.object(forKey: "dragLockEnabled") as? Bool ?? true
+        showCursorStatus = defaults.object(forKey: "showCursorStatus") as? Bool ?? true
         engine.configuration.sensitivity = sensitivity
         engine.configuration.controlStyle = controlStyle
         engine.configuration.smoothing = smoothing
@@ -199,6 +208,9 @@ enum ControlMode: String { case practice, system }
             // Timer is installed on the main run loop, like the camera watchdog.
             MainActor.assumeIsolated {
                 guard let self, self.isRunning else { return }
+                self.cursorOverlay.update(engine: self.engine, handoff: Self.now < self.handoffUntil,
+                    trackingFresh: self.previousValidCapture.map { Self.now - $0 < 0.2 } ?? false,
+                    visible: self.showCursorStatus && self.isSystemControl)
                 self.objectWillChange.send()
             }
         }
@@ -466,6 +478,7 @@ enum ControlMode: String { case practice, system }
     }
 
     func stop(message: String = "제어가 멈췄습니다") {
+        cursorOverlay.hide()
         if isCalibrating { calibration.cancel(); isCalibrating = false }
         demoTimer?.invalidate(); demoTimer = nil
         let stopped = systemTracking.stop(reason: message)
@@ -522,7 +535,7 @@ enum ControlMode: String { case practice, system }
             fps = fps == 0 ? current : fps * 0.85 + current * 0.15
         }
         previousFrame = result.capturedAt; previousFrameArrival = now; receivedFrames += 1
-        if result.features != nil { validHandFrameCount += 1 }
+        if result.features != nil { validHandFrameCount += 1; previousValidCapture = result.capturedAt }
         // Calibration keeps aggregate settings only; its samples must never
         // enter the general-purpose hand-coordinate diagnostic trace.
         if isCalibrating {
@@ -602,7 +615,7 @@ enum ControlMode: String { case practice, system }
     }
     private func clearMetrics() {
         trackingDelivery.resetStatistics()
-        receivedFrames = 0; previousFrame = nil; previousFrameArrival = nil; inferenceLatencies = []; transitions = []; fps = 0; latency = 0
+        receivedFrames = 0; previousFrame = nil; previousFrameArrival = nil; previousValidCapture = nil; inferenceLatencies = []; transitions = []; fps = 0; latency = 0
         interruptionReasons = [:]
         validHandFrameCount = 0; staleFrameCount = 0; physicalHandoffCount = 0; frameTrace = []
         activeFrameTrace = []; lastActiveCapture = nil
@@ -678,7 +691,7 @@ enum ControlMode: String { case practice, system }
             "buttonHeld": systemSession ? engine.isButtonHeld : scene.isPressed, "state": engine.state.rawValue,
             "isRunning": isRunning, "status": status, "engineReason": engine.reason,
             "sensitivity": sensitivity, "minimumCutoff": smoothing, "controlStyle": controlStyle.rawValue,
-            "dragLockEnabled": dragLockEnabled,
+            "dragLockEnabled": dragLockEnabled, "showCursorStatus": showCursorStatus,
             "personalCalibrationApplied": calibrationProfile != nil,
             "captureSize": captureSize, "captureDrops": captureDrops, "captureConfiguration": captureConfiguration,
             "captureToInferenceP95Ms": sorted.isEmpty ? NSNull() : sorted[min(sorted.count - 1, Int(Double(sorted.count) * 0.95))] as Any,

@@ -189,6 +189,7 @@ struct ControlPage: View {
                         Toggle("드래그 잠금", isOn: $model.dragLockEnabled).disabled(model.isRunning)
                         Text("끌기 시작 후에는 계속 집고 있지 않아도 됩니다. 다시 집으면 놓습니다.")
                             .font(.caption).foregroundStyle(.secondary)
+                        Toggle("커서 옆에 상태 표시", isOn: $model.showCursorStatus)
                     }.padding(8)
                 }
                 CameraMonitor(model: model)
