@@ -31,6 +31,7 @@ public enum ControlStyle: String, CaseIterable, Sendable {
 
 public struct GestureConfiguration: Sendable {
     public var controlStyle: ControlStyle = .comfortable
+    public var dragLockEnabled = false
     public var activationDuration = 0.35
     public var pinchDuration = 0.08
     public var scrollDuration = 0.18
@@ -40,6 +41,8 @@ public struct GestureConfiguration: Sendable {
     public var pinchEnter = 0.25
     public var pinchExit = 0.38
     public var dragThreshold = 8.0
+    /// Normalized palm travel measured during personal calibration.
+    public var calibratedDragTolerance: Double?
     public var sensitivity = 1.6
     public var smoothing = 1.5
     public var scrollMultiplier = 1.0
@@ -57,6 +60,9 @@ public struct GestureEngine {
     public private(set) var progress = 0.0
     public private(set) var generation = 0
     public private(set) var enabled = false
+    public private(set) var dragLocked = false
+    public var waitingForPinchRelease: Bool { awaitingPinchRelease }
+    public var isButtonHeld: Bool { buttonDown }
     private var width = 760.0
     private var height = 440.0
     private var sequence = -1
@@ -77,6 +83,8 @@ public struct GestureEngine {
     private var secondaryPreparationStart: Double?
     private var secondaryArmedUntil: Double?
     private var buttonDown = false
+    private var dropCandidateStart: Double?
+    private var awaitingPinchRelease = false
     private var lastHand: HandFeatures?
     private var previousPoint: Point?
     private var pressPalm: Point?
@@ -141,6 +149,9 @@ public struct GestureEngine {
               lastFrameTime.map({ time > $0 }) ?? true else { return [] }
         // Enforce timeouts even when a new frame wins the race with the watchdog.
         var actions = tick(at: now)
+        if dragLocked && !configuration.dragLockEnabled {
+            return actions + suspend("끌기 잠금을 꺼서 입력을 해제했습니다")
+        }
         let frameInterval = lastFrameTime.map { time - $0 } ?? (1 / 30)
         self.sequence = sequence; lastFrameTime = time; lastFrameArrival = now
         guard let hand, hand.isValid else {
@@ -160,7 +171,7 @@ public struct GestureEngine {
         }
         lastHand = hand; lastValidTime = now
         if !hand.isPinchReliable {
-            if state == .pinchCandidate || state == .pressed || state == .dragging {
+            if state == .pinchCandidate || state == .pressed || (state == .dragging && !dragLocked) {
                 return actions + suspend("엄지가 가려져 입력을 해제했습니다")
             }
             pinchLatched = false
@@ -177,7 +188,7 @@ public struct GestureEngine {
         let index = filter.update(hand.index, at: time)
         let palm = palmFilter.update(hand.palm, at: time)
         let pointer = configuration.controlStyle == .comfortable ? palm : index
-        if state == .pointer || state == .scrolling {
+        if !awaitingPinchRelease && (state == .pointer || state == .scrolling) {
             // A folded middle finger can sit next to the thumb during ordinary
             // pointing. Require an intentional two-finger preparation first.
             if hand.isScroll, hand.isPinchReliable,
@@ -187,7 +198,7 @@ public struct GestureEngine {
                 if time - secondaryPreparationStart! >= 0.10 { secondaryArmedUntil = time + 0.7 }
             } else { secondaryPreparationStart = nil }
         }
-        if state == .pointer || state == .suspended || state == .scrolling {
+        if !awaitingPinchRelease && (state == .pointer || state == .suspended || state == .scrolling) {
             let secondaryReady = configuration.controlStyle == .direct || (secondaryArmedUntil.map { time <= $0 } ?? false)
             secondaryPinch = secondaryReady && (hand.secondaryPinchRatio.map { $0 < configuration.pinchEnter && $0 < hand.pinchRatio } ?? false)
         }
@@ -196,6 +207,21 @@ public struct GestureEngine {
         else if ratio > configuration.pinchExit { pinchLatched = false }
 
         if hand.isOpenPalm { return actions + suspend("쉬는 중 · 검지를 펴면 다시 시작합니다") }
+
+        if awaitingPinchRelease {
+            // The pinch that placed an item must not also press it again. An
+            // occluded thumb is not evidence that the user has opened it.
+            previousPoint = resetPointer(hand, at: time); residual = .zero
+            if hand.isPinchReliable && hand.pinchRatio > configuration.pinchExit {
+                awaitingPinchRelease = false; pinchLatched = false
+                reason = "검지를 움직이세요 · 핀치로 클릭"
+            }
+            return actions
+        }
+
+        if dragLocked {
+            return actions + updateLockedDrag(hand, palm: palm, at: time, interval: frameInterval)
+        }
 
         switch state {
         case .suspended:
@@ -264,6 +290,16 @@ public struct GestureEngine {
             }
         case .pressed, .dragging:
             if !pinchLatched {
+                if state == .dragging && configuration.dragLockEnabled {
+                    // Keep the existing down; opening fingers only changes the
+                    // way that held input is moved. All safety exits still call
+                    // suspend(), which releases it exactly once.
+                    dragLocked = true; dropCandidateStart = nil; pressPalm = nil
+                    _ = resetPointer(hand, at: time)
+                    previousPoint = hand.palm; residual = .zero
+                    reason = "끌기 잠금 · 검지를 펴서 이동 · 다시 집으면 놓기"
+                    return actions
+                }
                 if state == .pressed && configuration.controlStyle == .comfortable {
                     clickAnchor = hand.palm; clickAnchorUntil = time + 0.30
                 }
@@ -278,13 +314,19 @@ public struct GestureEngine {
                 // pointer speed does not turn the same small shift into a drag.
                 let comfortable = configuration.controlStyle == .comfortable
                 let distance = comfortable ? handDelta.length : delta.length
-                let threshold = comfortable ? min(0.025, max(0.008, hand.palmScale * 0.10)) : configuration.dragThreshold
+                let calibratedTolerance = configuration.calibratedDragTolerance.flatMap {
+                    $0.isFinite ? min(0.04, max(0.008, $0)) : nil
+                }
+                let threshold = comfortable
+                    ? (calibratedTolerance ?? min(0.025, max(0.008, hand.palmScale * 0.10)))
+                    : configuration.dragThreshold
                 if distance > threshold {
                     if secondaryPinch { return actions + suspend("손이 움직여 우클릭을 취소했습니다") }
                     state = .dragging; previousPoint = palm; residual = .zero
                     let excess = delta * ((distance - threshold) / distance)
                     cursor = (cursor + excess).clamped(width: width, height: height)
-                    actions.append(.drag(cursor)); reason = "드래그 중 · 놓으면 완료"
+                    actions.append(.drag(cursor))
+                    reason = configuration.dragLockEnabled ? "드래그 중 · 손가락을 펴면 끌기 잠금" : "드래그 중 · 놓으면 완료"
                 }
             } else if state == .dragging { actions += move(palm, dragging: true, interval: frameInterval) }
         case .scrolling:
@@ -336,6 +378,52 @@ public struct GestureEngine {
         Point(delta.x * width, delta.y * height) * configuration.sensitivity
     }
 
+    private mutating func updateLockedDrag(_ hand: HandFeatures, palm: Point,
+                                           at time: Double, interval: Double) -> [InputIntent] {
+        // Use consecutive closed observations, not just the hysteresis latch:
+        // one noisy closed sample followed by an ambiguous gap cannot drop.
+        if hand.isPinchReliable && hand.pinchRatio < configuration.pinchEnter {
+            uncertainPoseStart = nil; previousPoint = nil; residual = .zero
+            if dropCandidateStart == nil { dropCandidateStart = time }
+            let duration = max(0.10, configuration.pinchDuration)
+            progress = min(1, (time - dropCandidateStart!) / duration)
+            reason = "놓기 확인 중 · 손가락을 잠시 모으세요"
+            if time - dropCandidateStart! >= duration {
+                let actions: [InputIntent] = buttonDown ? [.up(cursor)] : []
+                buttonDown = false; dragLocked = false; awaitingPinchRelease = true
+                dropCandidateStart = nil; progress = 0; state = .pointer
+                secondaryPinch = false; secondaryPreparationStart = nil; secondaryArmedUntil = nil
+                previousPoint = resetPointer(hand, at: time)
+                reason = "끌기 완료 · 손가락을 펴세요"
+                return actions
+            }
+            return []
+        }
+        if dropCandidateStart != nil {
+            dropCandidateStart = nil
+            _ = resetPointer(hand, at: time)
+            previousPoint = hand.palm; residual = .zero
+            progress = 0
+            reason = "끌기 잠금 · 검지를 펴서 이동 · 다시 집으면 놓기"
+            return []
+        }
+        progress = 0
+        if pinchLatched { return [] }
+        if hand.isPointer {
+            uncertainPoseStart = nil
+            reason = "끌기 잠금 · 검지를 펴서 이동 · 다시 집으면 놓기"
+            return move(palm, dragging: true, interval: interval)
+        }
+        // Other gestures cannot run while an item is held. A brief pose change
+        // freezes it; a sustained incompatible pose releases it safely.
+        previousPoint = nil; residual = .zero
+        if uncertainPoseStart == nil { uncertainPoseStart = time }
+        if time - uncertainPoseStart! >= configuration.poseGraceDuration {
+            return suspend("손 모양이 바뀌어 끌기를 종료했습니다")
+        }
+        return []
+    }
+
     private mutating func beginPinch(at time: Double) {
         clickAnchor = nil; clickAnchorUntil = nil
         uncertainPoseStart = nil
@@ -385,6 +473,7 @@ public struct GestureEngine {
     private mutating func suspend(_ reason: String) -> [InputIntent] {
         let actions: [InputIntent] = buttonDown ? [.up(cursor)] : []
         buttonDown = false; state = .suspended; self.reason = reason; progress = 0
+        dragLocked = false; dropCandidateStart = nil; awaitingPinchRelease = false
         activationStart = nil; activationIsScroll = false; clickAnchor = nil; clickAnchorUntil = nil
         candidateStart = nil; scrollStart = nil; pinchLatched = false; secondaryPinch = false
         uncertainPoseStart = nil
