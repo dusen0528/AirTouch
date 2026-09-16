@@ -80,14 +80,21 @@ struct AirTouchSettings: View {
     var body: some View {
         TabView {
             Form {
+                Section("내 손에 맞추기") {
+                    LabeledContent("개인 보정", value: model.calibrationProfile == nil ? "아직 보정하지 않음" : "적용 중")
+                    Button("손 보정 열기…") { openWindow(id: "practice"); model.openCalibration() }
+                    if model.calibrationProfile != nil {
+                        Button("보정 초기화") { model.resetCalibration() }.disabled(model.isRunning)
+                    }
+                }
                 Section("포인터") {
                     ControlStylePicker(model: model)
                     LabeledContent("이동 속도") {
-                        Slider(value: $model.sensitivity, in: 0.6...3, step: 0.1).frame(width: 200)
+                        Slider(value: $model.sensitivity, in: 0.6...3.2, step: 0.1).frame(width: 200)
                         Text(String(format: "%.1f×", model.sensitivity)).monospacedDigit().frame(width: 42)
                     }
                     LabeledContent("움직임 보정") {
-                        Slider(value: $model.smoothing, in: 0.6...3, step: 0.1).frame(width: 200)
+                        Slider(value: $model.smoothing, in: 0.6...3.2, step: 0.1).frame(width: 200)
                         Text(model.smoothing < 1.3 ? "부드럽게" : model.smoothing > 2 ? "빠르게" : "균형")
                             .font(.caption).frame(width: 48)
                     }
@@ -97,7 +104,7 @@ struct AirTouchSettings: View {
                     Toggle("스크롤 방향 반전", isOn: $model.reverseScroll)
                 }.disabled(model.isRunning)
                 Section {
-                    Button("기본값 복원") { model.controlStyle = .comfortable; model.sensitivity = 1.6; model.smoothing = 1.5; model.reverseScroll = false }
+                    Button("기본값 복원") { model.controlStyle = .comfortable; model.sensitivity = 1.6; model.smoothing = 1.5; model.reverseScroll = false; model.resetCalibration() }
                         .disabled(model.isRunning)
                     if model.isRunning { Text("제어를 중지하면 설정을 변경할 수 있습니다.").foregroundStyle(.secondary) }
                 }

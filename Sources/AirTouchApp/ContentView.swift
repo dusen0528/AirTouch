@@ -6,12 +6,13 @@ private let accent = Color.accentColor
 private let paper = Color(nsColor: .windowBackgroundColor)
 
 enum AppDestination: String, CaseIterable, Identifiable {
-    case control, practice, permissions, diagnostics
+    case control, practice, calibration, permissions, diagnostics
     var id: Self { self }
     var title: String {
         switch self {
         case .control: return "Mac 제어"
         case .practice: return "손동작 연습"
+        case .calibration: return "내 손에 맞추기"
         case .permissions: return "사용 준비"
         case .diagnostics: return "인식 상태"
         }
@@ -20,6 +21,7 @@ enum AppDestination: String, CaseIterable, Identifiable {
         switch self {
         case .control: return "cursorarrow"
         case .practice: return "hand.draw"
+        case .calibration: return "hand.raised.fingers.spread"
         case .permissions: return "checklist"
         case .diagnostics: return "waveform.path.ecg"
         }
@@ -38,7 +40,7 @@ struct ContentView: View {
                     }
                 }
                 Section("설정 및 지원") {
-                    ForEach([AppDestination.permissions, .diagnostics]) { item in
+                    ForEach([AppDestination.calibration, .permissions, .diagnostics]) { item in
                         Label(item.title, systemImage: item.symbol).tag(item)
                     }
                 }
@@ -57,6 +59,7 @@ struct ContentView: View {
                 switch model.destination ?? .control {
                 case .control: ControlPage(model: model)
                 case .practice: practicePage
+                case .calibration: CalibrationView(model: model)
                 case .permissions: SetupView(model: model, permissions: model.permissions)
                 case .diagnostics: DiagnosticsView(model: model)
                 }
@@ -65,9 +68,11 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        model.isRunning ? model.stop() : model.startSelectedMode()
+                        if model.isRunning { model.stop() }
+                        else if model.destination == .calibration { model.startCalibration() }
+                        else { model.startSelectedMode() }
                     } label: {
-                        Label(model.isRunning ? "중지" : model.mode == .system ? "제어 시작" : "연습 시작",
+                        Label(model.isRunning ? "중지" : model.destination == .calibration ? "보정 시작" : model.mode == .system ? "제어 시작" : "연습 시작",
                               systemImage: model.isRunning ? "stop.fill" : "play.fill")
                     }
                     .help(model.isRunning ? "카메라와 입력을 중지합니다" : "카메라를 켜고 손동작 인식을 시작합니다")
@@ -81,7 +86,7 @@ struct ContentView: View {
                     Image(systemName: model.isRunning ? "circle.fill" : "circle")
                         .foregroundStyle(model.isRunning ? Color.green : Color.secondary)
                         .font(.system(size: 7))
-                    Text(model.isRunning ? model.engine.reason : model.status).lineLimit(2)
+                    Text(model.isCalibrating ? model.calibrationSnapshot.instruction : model.isRunning ? model.engine.reason : model.status).lineLimit(2)
                     Spacer(minLength: 12)
                     if model.isRunning && !model.isDemo {
                         Text(String(format: "%.0f fps · %.0f ms", model.fps, model.latency)).monospacedDigit()
@@ -92,10 +97,13 @@ struct ContentView: View {
         }
         .onChange(of: model.destination) { _, value in
             guard let value else { return }
+            if model.isCalibrating && value != .calibration { model.cancelCalibration(); model.destination = value }
             let mode: ControlMode? = value == .control ? .system : value == .practice ? .practice : nil
             if let mode, mode != model.mode { model.stop(); model.mode = mode }
         }
-        .onChange(of: model.mode) { _, value in model.destination = value == .system ? .control : .practice }
+        .onChange(of: model.mode) { _, value in
+            if !model.isCalibrating && model.destination != .calibration { model.destination = value == .system ? .control : .practice }
+        }
         .frame(minWidth: 820, minHeight: 620)
     }
 
@@ -164,6 +172,16 @@ struct ControlPage: View {
                         Spacer()
                         Button("사용 준비") { model.showSetup = true }
                     }.font(.callout)
+                }
+                GroupBox {
+                    HStack(alignment: .center) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(model.calibrationProfile == nil ? "먼저 내 손에 맞춰보세요" : "내 손에 맞춘 보정 사용 중").font(.headline)
+                            Text("편한 이동 범위와 손 떨림, 집는 간격을 약 30초 동안 맞춥니다.").font(.callout).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Button(model.calibrationProfile == nil ? "손 보정 시작" : "다시 보정") { model.openCalibration() }
+                    }.padding(8)
                 }
                 GroupBox("조작 방식") {
                     ControlStylePicker(model: model).padding(8)

@@ -31,7 +31,7 @@ enum ControlMode: String { case practice, system }
     @Published private(set) var emergencyTested = false
     @Published private(set) var displays: [ControlDisplay] = []
     @Published var selectedDisplayID: UInt32 = CGMainDisplayID() {
-        didSet { if selectedDisplayID != oldValue { stop(message: "제어 화면을 변경했습니다"); UserDefaults.standard.set(Int(selectedDisplayID), forKey: "displayID") } }
+        didSet { if selectedDisplayID != oldValue { stop(message: "제어 화면을 변경했습니다"); preferences.set(Int(selectedDisplayID), forKey: "displayID") } }
     }
     private(set) var systemEventCount = 0
     private(set) var validHandFrameCount = 0
@@ -65,18 +65,24 @@ enum ControlMode: String { case practice, system }
         didSet {
             if controlStyle != oldValue { stop(message: "조작 방식을 변경했습니다") }
             engine.configuration.controlStyle = controlStyle
-            UserDefaults.standard.set(controlStyle.rawValue, forKey: "controlStyle")
+            preferences.set(controlStyle.rawValue, forKey: "controlStyle")
         }
     }
     @Published var sensitivity: Double {
-        didSet { engine.configuration.sensitivity = sensitivity; UserDefaults.standard.set(sensitivity, forKey: "sensitivity") }
+        didSet { engine.configuration.sensitivity = sensitivity; preferences.set(sensitivity, forKey: "sensitivity") }
     }
     @Published var smoothing: Double {
-        didSet { engine.configuration.smoothing = smoothing; UserDefaults.standard.set(smoothing, forKey: "smoothing") }
+        didSet { engine.configuration.smoothing = smoothing; preferences.set(smoothing, forKey: "smoothing") }
     }
     @Published var reverseScroll: Bool {
-        didSet { engine.configuration.scrollMultiplier = reverseScroll ? -1 : 1; UserDefaults.standard.set(reverseScroll, forKey: "reverseScroll") }
+        didSet { engine.configuration.scrollMultiplier = reverseScroll ? -1 : 1; preferences.set(reverseScroll, forKey: "reverseScroll") }
     }
+    @Published private(set) var isCalibrating = false
+    @Published private(set) var calibrationProfile: PersonalCalibrationProfile?
+    private(set) var calibration = PersonalCalibrationSession()
+    var calibrationSnapshot: PersonalCalibrationSnapshot { calibration.snapshot }
+    private lazy var calibrationStore = CalibrationProfileStore(defaults: preferences)
+    private let preferences: UserDefaults
     private lazy var systemTracking = SystemTrackingController(input: isPipelineBenchmark ? BenchmarkInputSink() : systemInput)
     let camera = CameraService()
     // Input processes every delivered result; diagnostics redraw at 20 Hz.
@@ -107,8 +113,12 @@ enum ControlMode: String { case practice, system }
     private var isCameraBenchmark: Bool { ProcessInfo.processInfo.arguments.contains("--camera-benchmark") }
     private var terminationSignal: DispatchSourceSignal?
 
-    init() {
-        let defaults = UserDefaults.standard
+    init(preferences: UserDefaults = .standard, runtimeServicesEnabled: Bool = true,
+         initialCalibration: PersonalCalibrationSession = PersonalCalibrationSession()) {
+        self.preferences = preferences
+        calibration = initialCalibration
+        isCalibrating = initialCalibration.stage.isCollecting
+        let defaults = preferences
         controlStyle = defaults.string(forKey: "controlStyle").flatMap(ControlStyle.init(rawValue:)) ?? .comfortable
         sensitivity = defaults.object(forKey: "sensitivity") as? Double ?? 1.6
         smoothing = defaults.object(forKey: "smoothing") as? Double ?? 1.5
@@ -117,11 +127,18 @@ enum ControlMode: String { case practice, system }
         engine.configuration.controlStyle = controlStyle
         engine.configuration.smoothing = smoothing
         engine.configuration.scrollMultiplier = reverseScroll ? -1 : 1
+        if let profile = CalibrationProfileStore(defaults: defaults).load() {
+            calibrationProfile = profile
+            engine.configuration.pinchEnter = profile.pinchEnter
+            engine.configuration.pinchExit = profile.pinchExit
+            engine.configuration.calibratedDragTolerance = profile.dragTolerance
+        }
         displays = ControlDisplay.current()
         if let saved = defaults.object(forKey: "displayID") as? Int, displays.contains(where: { $0.id == UInt32(saved) }) {
             selectedDisplayID = UInt32(saved)
         }
         if controlDisplay == nil, let display = displays.first { selectedDisplayID = display.id }
+        guard runtimeServicesEnabled else { return }
         permissionSubscription = permissions.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() }
         permissions.onChange = { [weak self] in
             guard let self else { return }
@@ -185,6 +202,11 @@ enum ControlMode: String { case practice, system }
         watchdog = Timer.scheduledTimer(withTimeInterval: 0.04, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 guard let self, self.isRunning, !self.isDemo else { return }
+                if self.isCalibrating {
+                    self.calibration.tick(at: Self.now)
+                    self.checkCalibrationCompletion()
+                    return
+                }
                 if !self.systemSession {
                     let previous = self.engine.state
                     self.apply(self.engine.tick(at: Self.now))
@@ -261,7 +283,7 @@ enum ControlMode: String { case practice, system }
         handledLaunchArguments = true
         if isCameraBenchmark { startCameraBenchmark() }
         else if ProcessInfo.processInfo.arguments.contains("--demo") { startDemo() }
-        else { showSetup = !UserDefaults.standard.bool(forKey: "setupCompleted.v2") || !permissions.ready }
+        else { showSetup = !preferences.bool(forKey: "setupCompleted.v2") || !permissions.ready }
     }
 
     func startSelectedMode() { if mode == .system { startSystemControl() } else { startCamera() } }
@@ -284,7 +306,7 @@ enum ControlMode: String { case practice, system }
     func finishSetup() {
         permissions.refresh()
         guard canStartSystem else { return }
-        UserDefaults.standard.set(true, forKey: "setupCompleted.v2")
+        preferences.set(true, forKey: "setupCompleted.v2")
         showSetup = false; mode = .system; destination = .control
     }
 
@@ -314,6 +336,53 @@ enum ControlMode: String { case practice, system }
         handoffUntil = Self.now + 1.5
         engine = systemTracking.pause(until: handoffUntil, reason: "마우스에 제어권을 넘겼습니다 · 멈춘 뒤 검지를 펴세요")
         outputStarted = false
+    }
+
+    func openCalibration() {
+        stop(message: "내 손에 맞추기")
+        calibration.reset()
+        destination = .calibration
+    }
+
+    func startCalibration() {
+        startCamera()
+        guard isRunning else { return }
+        calibration.start(at: Self.now, date: Date())
+        isCalibrating = true; destination = .calibration
+        status = "안내에 따라 손을 움직여주세요"
+    }
+
+    func cancelCalibration() {
+        stop(message: "손 보정을 취소했습니다")
+        destination = .calibration
+    }
+
+    private func checkCalibrationCompletion() {
+        guard isCalibrating, !calibration.stage.isCollecting else { return }
+        isCalibrating = false
+        stop(message: calibration.stage == .completed ? "보정이 끝났습니다. 결과를 확인하고 적용하세요" : "보정을 다시 진행해주세요")
+    }
+
+    func applyCalibration() {
+        guard calibration.stage == .completed, let profile = calibration.profile,
+              calibrationStore.save(profile) else { return }
+        stop(message: "내 손에 맞는 보정을 적용했습니다")
+        controlStyle = .comfortable; sensitivity = profile.sensitivity; smoothing = profile.minimumCutoff
+        engine.configuration.pinchEnter = profile.pinchEnter
+        engine.configuration.pinchExit = profile.pinchExit
+        engine.configuration.calibratedDragTolerance = profile.dragTolerance
+        calibrationProfile = profile; destination = .control; mode = .system
+    }
+
+    func resetCalibration() {
+        stop(message: "손 보정을 초기화했습니다")
+        calibrationStore.clear()
+        calibrationProfile = nil; calibration.reset()
+        let defaults = GestureConfiguration()
+        sensitivity = defaults.sensitivity; smoothing = defaults.smoothing
+        engine.configuration.pinchEnter = defaults.pinchEnter
+        engine.configuration.pinchExit = defaults.pinchExit
+        engine.configuration.calibratedDragTolerance = nil
     }
 
     func startCamera() {
@@ -385,6 +454,7 @@ enum ControlMode: String { case practice, system }
     }
 
     func stop(message: String = "제어가 멈췄습니다") {
+        if isCalibrating { calibration.cancel(); isCalibrating = false }
         demoTimer?.invalidate(); demoTimer = nil
         let stopped = systemTracking.stop(reason: message)
         outputStarted = false
@@ -404,9 +474,7 @@ enum ControlMode: String { case practice, system }
     private func pauseWhenInactive() {
         // Practice has no OS input; preserve camera permission dialogs and the demo.
         guard isRunning, !isDemo, !isCameraBenchmark, !systemSession, AVCaptureDevice.authorizationStatus(for: .video) == .authorized else { return }
-        apply(engine.stop(reason: "다른 앱으로 이동해 연습을 멈췄습니다"))
-        isRunning = false; camera.stop(); joints = [:]
-        status = "연습을 다시 시작하려면 카메라 연습을 눌러주세요"
+        stop(message: isCalibrating ? "다른 앱으로 이동해 손 보정을 취소했습니다" : "다른 앱으로 이동해 연습을 멈췄습니다")
     }
 
     func resetPractice() {
@@ -443,6 +511,17 @@ enum ControlMode: String { case practice, system }
         }
         previousFrame = result.capturedAt; previousFrameArrival = now; receivedFrames += 1
         if result.features != nil { validHandFrameCount += 1 }
+        // Calibration keeps aggregate settings only; its samples must never
+        // enter the general-purpose hand-coordinate diagnostic trace.
+        if isCalibrating {
+            let required: [Joint] = calibration.stage == .pinch
+                ? [.wrist, .indexMCP, .indexPIP, .middleMCP, .indexTip, .thumbTip]
+                : [.wrist, .indexMCP, .indexPIP, .middleMCP, .indexTip]
+            let qualified = required.allSatisfy { (result.joints[$0]?.confidence ?? 0) >= 0.5 }
+            calibration.update(result.features, capturedAt: result.capturedAt, now: now, confidenceQualified: qualified)
+            checkCalibrationCompletion()
+            return
+        }
         var trace: [String: Any] = ["sequence": result.sequence, "capturedAt": result.capturedAt,
             "receivedAt": now, "latencyMs": latency, "hands": result.handCount,
             "captureDeliveryMs": captureDeliveryTime, "inferenceMs": inferenceTime, "uiDeliveryMs": uiDeliveryTime,
@@ -587,6 +666,7 @@ enum ControlMode: String { case practice, system }
             "buttonHeld": systemSession ? engine.isButtonHeld : scene.isPressed, "state": engine.state.rawValue,
             "isRunning": isRunning, "status": status, "engineReason": engine.reason,
             "sensitivity": sensitivity, "minimumCutoff": smoothing, "controlStyle": controlStyle.rawValue,
+            "personalCalibrationApplied": calibrationProfile != nil,
             "captureSize": captureSize, "captureDrops": captureDrops, "captureConfiguration": captureConfiguration,
             "captureToInferenceP95Ms": sorted.isEmpty ? NSNull() : sorted[min(sorted.count - 1, Int(Double(sorted.count) * 0.95))] as Any,
             "transitions": transitions, "interruptionReasons": interruptionReasons, "osInputEnabled": systemSession, "systemIntentCount": systemEventCount,
