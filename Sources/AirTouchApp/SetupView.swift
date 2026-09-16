@@ -100,11 +100,15 @@ struct AirTouchSettings: View {
                     }
                     Text("왼쪽은 떨림을 줄이고, 오른쪽은 손 움직임에 더 빠르게 반응합니다.").font(.caption).foregroundStyle(.secondary)
                 }.disabled(model.isRunning)
+                Section("끌기") {
+                    Toggle("드래그 잠금", isOn: $model.dragLockEnabled).disabled(model.isRunning)
+                    Text("끌기 시작 후 손가락을 풀고 이동하고, 다시 집으면 놓습니다.").font(.caption).foregroundStyle(.secondary)
+                }
                 Section("스크롤") {
                     Toggle("스크롤 방향 반전", isOn: $model.reverseScroll)
                 }.disabled(model.isRunning)
                 Section {
-                    Button("기본값 복원") { model.controlStyle = .comfortable; model.sensitivity = 1.6; model.smoothing = 1.5; model.reverseScroll = false; model.resetCalibration() }
+                    Button("기본값 복원") { model.controlStyle = .comfortable; model.sensitivity = 1.6; model.smoothing = 1.5; model.reverseScroll = false; model.dragLockEnabled = true; model.resetCalibration() }
                         .disabled(model.isRunning)
                     if model.isRunning { Text("제어를 중지하면 설정을 변경할 수 있습니다.").foregroundStyle(.secondary) }
                 }

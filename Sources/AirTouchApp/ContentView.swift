@@ -129,7 +129,7 @@ struct ContentView: View {
                     LabeledContent("스크롤", value: "\(Int(model.scene.scrollDistance)) pt")
                 }.font(.callout)
                 CameraMonitor(model: model).frame(maxWidth: 380).frame(maxWidth: .infinity)
-                GestureGuide(style: model.controlStyle)
+                GestureGuide(style: model.controlStyle, dragLock: model.dragLockEnabled)
             }.padding(24).frame(maxWidth: 850).frame(maxWidth: .infinity)
         }
     }
@@ -184,7 +184,12 @@ struct ControlPage: View {
                     }.padding(8)
                 }
                 GroupBox("조작 방식") {
-                    ControlStylePicker(model: model).padding(8)
+                    VStack(alignment: .leading, spacing: 12) {
+                        ControlStylePicker(model: model)
+                        Toggle("드래그 잠금", isOn: $model.dragLockEnabled).disabled(model.isRunning)
+                        Text("끌기 시작 후에는 계속 집고 있지 않아도 됩니다. 다시 집으면 놓습니다.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }.padding(8)
                 }
                 CameraMonitor(model: model)
                 HStack(alignment: .top) {
@@ -202,7 +207,7 @@ struct ControlPage: View {
                 Picker("제어할 화면", selection: $model.selectedDisplayID) {
                     ForEach(model.displays) { Text($0.name).tag($0.id) }
                 }.disabled(model.isRunning)
-                GestureGuide(style: model.controlStyle)
+                GestureGuide(style: model.controlStyle, dragLock: model.dragLockEnabled)
                 Text("마우스나 트랙패드를 사용하면 손동작 제어가 잠시 멈춥니다. 손을 움직이지 않고 1.5초 기다린 뒤 검지를 펴면 이어서 제어합니다.")
                     .font(.callout).foregroundStyle(.secondary)
                 Text("이 창을 닫아도 제어는 계속됩니다. 메뉴 막대의 AirTouch 또는 ⌃⌥⌘Space로 중지하세요.")
@@ -231,13 +236,14 @@ struct ControlStylePicker: View {
 
 struct GestureGuide: View {
     var style: ControlStyle
+    var dragLock = false
     var body: some View {
         GroupBox("손동작") {
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 12) {
                 row("hand.point.up.left", "이동", style == .comfortable ? "검지를 편 채 손 전체를 움직이기 · 목표 근처에서는 천천히" : "검지 끝을 움직이기")
                 row("hand.pinch", "클릭", "멈춘 뒤 엄지와 검지를 가볍게 모았다 놓기")
                 row("cursorarrow.click", "더블클릭", "같은 자리에서 엄지와 검지를 두 번 모았다 놓기")
-                row("hand.draw", "드래그", "엄지와 검지를 모은 채 손 전체를 움직이기")
+                row("hand.draw", "드래그", dragLock ? "집어서 끌기 시작 → 손가락을 풀고 이동 → 다시 집어서 놓기" : "엄지와 검지를 모은 채 손 전체를 움직이기")
                 row("cursorarrow.click.2", "우클릭", style == .comfortable ? "검지·중지를 V로 펼친 뒤 엄지와 중지를 모았다 놓기" : "엄지와 중지를 모았다 놓기")
                 row("arrow.up.arrow.down", "스크롤", style == .comfortable ? "검지·중지를 펴고 위아래로 · 끊기면 두 손가락을 잠시 펴서 재개" : "검지와 중지를 펴고 위아래로 움직이기")
                 row("hand.raised", "잠시 쉬기", "손바닥 펼치기")

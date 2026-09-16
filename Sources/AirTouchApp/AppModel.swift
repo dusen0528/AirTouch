@@ -77,6 +77,13 @@ enum ControlMode: String { case practice, system }
     @Published var reverseScroll: Bool {
         didSet { engine.configuration.scrollMultiplier = reverseScroll ? -1 : 1; preferences.set(reverseScroll, forKey: "reverseScroll") }
     }
+    @Published var dragLockEnabled: Bool {
+        didSet {
+            if dragLockEnabled != oldValue { stop(message: "드래그 방식을 변경했습니다") }
+            engine.configuration.dragLockEnabled = dragLockEnabled
+            preferences.set(dragLockEnabled, forKey: "dragLockEnabled")
+        }
+    }
     @Published private(set) var isCalibrating = false
     @Published private(set) var calibrationProfile: PersonalCalibrationProfile?
     private(set) var calibration = PersonalCalibrationSession()
@@ -123,10 +130,12 @@ enum ControlMode: String { case practice, system }
         sensitivity = defaults.object(forKey: "sensitivity") as? Double ?? 1.6
         smoothing = defaults.object(forKey: "smoothing") as? Double ?? 1.5
         reverseScroll = defaults.bool(forKey: "reverseScroll")
+        dragLockEnabled = defaults.object(forKey: "dragLockEnabled") as? Bool ?? true
         engine.configuration.sensitivity = sensitivity
         engine.configuration.controlStyle = controlStyle
         engine.configuration.smoothing = smoothing
         engine.configuration.scrollMultiplier = reverseScroll ? -1 : 1
+        engine.configuration.dragLockEnabled = dragLockEnabled
         if let profile = CalibrationProfileStore(defaults: defaults).load() {
             calibrationProfile = profile
             engine.configuration.pinchEnter = profile.pinchEnter
@@ -291,6 +300,7 @@ enum ControlMode: String { case practice, system }
     func startSystemControl() {
         stop(); permissions.refresh()
         guard canStartSystem, let display = controlDisplay else { showSetup = true; return }
+        engine.configuration.dragLockEnabled = dragLockEnabled
         mode = .system; systemSession = true; isDemo = false; systemEventCount = 0; scene = PracticeScene()
         let location = CGEvent(source: nil)?.location ?? CGPoint(x: display.area.origin.x, y: display.area.origin.y)
         _ = engine.rebase(to: display.area.local(Point(location.x, location.y)), width: display.area.width, height: display.area.height)
@@ -387,6 +397,7 @@ enum ControlMode: String { case practice, system }
 
     func startCamera() {
         stop()
+        engine.configuration.dragLockEnabled = dragLockEnabled
         mode = .practice; systemSession = false
         _ = engine.rebase(to: Point(380, 220), width: 760, height: 440)
         scene = PracticeScene() // Never count synthetic-demo successes as camera results.
@@ -427,9 +438,10 @@ enum ControlMode: String { case practice, system }
         stop(); resetPractice(); clearMetrics()
         mode = .practice; destination = .practice; systemSession = false; showSetup = false
         _ = engine.rebase(to: Point(380, 220), width: 760, height: 440)
+        engine.configuration.dragLockEnabled = dragLockEnabled
         apply(engine.start()); isRunning = true; isDemo = true; needsCameraPermission = false
         source = "시뮬레이션"; status = "합성 손 좌표로 연습 동작을 재생합니다"
-        demonstration = Demonstration(); demoTime = 0
+        demonstration = Demonstration(dragLock: dragLockEnabled); demoTime = 0
         demoTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.stepDemo() }
         }
@@ -666,6 +678,7 @@ enum ControlMode: String { case practice, system }
             "buttonHeld": systemSession ? engine.isButtonHeld : scene.isPressed, "state": engine.state.rawValue,
             "isRunning": isRunning, "status": status, "engineReason": engine.reason,
             "sensitivity": sensitivity, "minimumCutoff": smoothing, "controlStyle": controlStyle.rawValue,
+            "dragLockEnabled": dragLockEnabled,
             "personalCalibrationApplied": calibrationProfile != nil,
             "captureSize": captureSize, "captureDrops": captureDrops, "captureConfiguration": captureConfiguration,
             "captureToInferenceP95Ms": sorted.isEmpty ? NSNull() : sorted[min(sorted.count - 1, Int(Double(sorted.count) * 0.95))] as Any,

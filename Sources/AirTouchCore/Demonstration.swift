@@ -5,7 +5,8 @@ public struct Demonstration {
     public private(set) var frame = 0
     private var index = Point(0.5, 0.4)
     public static let totalFrames = 660
-    public init() {}
+    private var dragLock = false
+    public init(dragLock: Bool = false) { self.dragLock = dragLock }
     public var isFinished: Bool { frame >= Self.totalFrames }
 
     public mutating func next(cursor: Point, scene: PracticeScene, sensitivity: Double) -> HandFeatures {
@@ -19,8 +20,9 @@ public struct Demonstration {
         case 135..<150: break
         case 150..<260: destination = scene.box
         case 260..<285: pinch = true
-        case 285..<405: pinch = true; destination = scene.dropTarget
-        case 405..<425: break
+        case 285..<405: pinch = !dragLock || frame < 325; destination = scene.dropTarget
+        case 405..<415: pinch = dragLock
+        case 415..<425: break
         case 425..<445: scroll = true
         case 445..<505: scroll = true; index.y += 0.004
         case 505..<565: scroll = true; index.y -= 0.003
