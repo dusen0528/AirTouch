@@ -1,0 +1,27 @@
+{
+  "appVersion": "0.4.0",
+  "build": "10",
+  "bundleID": "dev.airtouch.mac",
+  "installedApps": [
+    "/Users/inho/Applications/AirTouch.app"
+  ],
+  "registeredApps": [
+    "/Users/inho/Applications/AirTouch.app"
+  ],
+  "runningProcesses": [
+    "44648 /Users/inho/Applications/AirTouch.app/Contents/MacOS/AirTouch"
+  ],
+  "strictSignatureValid": true,
+  "requirementUnchangedFromV036": true,
+  "installedBinarySHA256": "d4a22633054adf8bccb4776842fb5f5b413ec7fc91985777e3396ca52e61204f",
+  "releaseMachOSectionsMatch": true,
+  "matchedMachOSections": 39,
+  "binaryComparisonNote": "39개 Mach-O 섹션 내용 일치. 개발 서명과 빌드 임시 서명의 메타데이터 차이 때문에 파일 전체 해시는 비교하지 않음.",
+  "temporaryPackageRemoved": true,
+  "temporaryInstallBackupRemoved": true,
+  "staleTrashRegistrationRemoved": true,
+  "cameraPermissionInInstalledReport": true,
+  "accessibilityPermissionInInstalledReport": true,
+  "normalLaunchWithoutDiagnosticArguments": true,
+  "physicalHandOSInputVerified": false
+}

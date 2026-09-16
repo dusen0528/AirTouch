@@ -1,0 +1,7 @@
+Building for production...
+[0/2] Write swift-version--58304C5D6DBC2206.txt
+Build complete! (0.16s)
+/Users/inho/Documents/ChatGPT/AirTouch/.build/packaging/AirTouch.app: replacing existing signature
+Development signing: stable application identity across updates.
+Built: /Users/inho/Documents/ChatGPT/AirTouch/.build/packaging/AirTouch.app
+Installed: /Users/inho/Applications/AirTouch.app

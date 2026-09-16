@@ -1,0 +1,60 @@
+{
+  "appVersion" : "0.4.0",
+  "cameraRunningAtEnd" : true,
+  "captureConfiguration" : {
+    "activeFormatHeight" : "1080",
+    "activeFormatWidth" : "1920",
+    "note" : "요청한 기본 영상 형식과 30fps를 직접 선택했습니다",
+    "requestedHeight" : "720",
+    "requestedWidth" : "1280",
+    "sessionPreset" : "AVCaptureSessionPreset1280x720"
+  },
+  "captureDeliveryMs" : {
+    "median" : 123.78399999943213,
+    "p95" : 135.16158300262759
+  },
+  "captureDrops" : {
+
+  },
+  "captureSize" : [
+    1920,
+    1080
+  ],
+  "captureToInputSubmissionMs" : {
+    "maximum" : 176.38070833709207,
+    "median" : 142.22125000378583,
+    "p95" : 150.7638750008482,
+    "sampleCount" : 244
+  },
+  "captureToReceiptMs" : {
+    "median" : 144.03374999892549,
+    "p95" : 161.1287080013426
+  },
+  "coalescedFrames" : 0,
+  "gestureProcessingMs" : {
+    "maximum" : 0.010749998182291165,
+    "median" : 0.0016250014596153051,
+    "p95" : 0.0022083331714384258,
+    "sampleCount" : 246
+  },
+  "inferenceMs" : {
+    "median" : 16.519000000698725,
+    "p95" : 26.85274999748799
+  },
+  "inferenceToInputSubmissionMs" : {
+    "maximum" : 0.054958665714366361,
+    "median" : 0.030167335353326052,
+    "p95" : 0.038625668821623549,
+    "sampleCount" : 244
+  },
+  "measuredFrames" : 182,
+  "osInputEnabled" : false,
+  "pipelineBenchmark" : true,
+  "pixelFormat" : "420v",
+  "processedFrames" : 244,
+  "status" : "손을 카메라에 보여주세요",
+  "uiDeliveryMs" : {
+    "median" : 1.1621250014286488,
+    "p95" : 12.767583000822924
+  }
+}
