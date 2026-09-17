@@ -18,20 +18,20 @@ private struct CalibrationRun {
     }
 
     mutating func completeMovement(noise: Double = 0.001, horizontal: Double = 0.18,
-                                   vertical: Double = 0.16) {
+                                   vertical: Double = 0.16, reliable: Bool = true) {
         var n = 0
         while session.stage == .steady && n < 300 {
-            frame(palm: Point(0.5 + sin(Double(n) * 1.7) * noise, 0.5))
+            frame(palm: Point(0.5 + sin(Double(n) * 1.7) * noise, 0.5), reliable: reliable)
             n += 1
         }
         n = 0
         while session.stage == .horizontal && n < 300 {
-            frame(palm: Point(0.5 + sin(Double(n) / 20) * horizontal, 0.5))
+            frame(palm: Point(0.5 + sin(Double(n) / 20) * horizontal, 0.5), reliable: reliable)
             n += 1
         }
         n = 0
         while session.stage == .vertical && n < 300 {
-            frame(palm: Point(0.5, 0.5 + sin(Double(n) / 20) * vertical))
+            frame(palm: Point(0.5, 0.5 + sin(Double(n) / 20) * vertical), reliable: reliable)
             n += 1
         }
     }
@@ -82,7 +82,7 @@ final class PersonalCalibrationTests: XCTestCase {
         XCTAssertNil(run.session.profile)
     }
 
-    func testStaleDuplicateUnqualifiedAndOccludedSamplesDoNotEarnTime() {
+    func testStaleDuplicateAndUnqualifiedSamplesDoNotEarnTime() {
         var run = CalibrationRun()
         for _ in 0..<30 { run.frame() }
         let before = run.session.snapshot.stageProgress
@@ -91,12 +91,92 @@ final class PersonalCalibrationTests: XCTestCase {
         }
         XCTAssertEqual(run.session.snapshot.stageProgress, before)
         for _ in 0..<30 { run.frame(qualified: false) }
-        for _ in 0..<30 { run.frame(reliable: false) }
         run.session.update(run.hand, capturedAt: run.time + 0.01, now: run.time + 0.4, confidenceQualified: true)
         XCTAssertEqual(run.session.snapshot.stageProgress, before)
         XCTAssertEqual(run.session.stage, .steady)
-        XCTAssertEqual(run.session.snapshot.rejectedSamples, 71)
+        XCTAssertEqual(run.session.snapshot.rejectedSamples, 41)
         XCTAssertNil(run.session.profile)
+    }
+
+    func testOccludedThumbAllowsMovementStagesButStillBlocksPinchCalibration() {
+        var run = CalibrationRun()
+        run.completeMovement(reliable: false)
+        XCTAssertEqual(run.session.stage, .pinch)
+        XCTAssertEqual(run.session.snapshot.observation, .collecting)
+        let accepted = run.session.snapshot.acceptedSamples
+        for _ in 0..<30 { run.frame(reliable: false, qualified: false) }
+        XCTAssertEqual(run.session.snapshot.observation, .showThumb)
+        XCTAssertEqual(run.session.snapshot.acceptedSamples, accepted)
+        XCTAssertEqual(run.session.snapshot.stageProgress, 0)
+        XCTAssertEqual(run.session.snapshot.pinchCount, 0)
+        XCTAssertNil(run.session.profile)
+        for _ in 0..<30 { run.frame(qualified: false) }
+        XCTAssertEqual(run.session.snapshot.observation, .adjustHand)
+        XCTAssertEqual(run.session.snapshot.acceptedSamples, accepted)
+        run.completePinches()
+        XCTAssertEqual(run.session.stage, .completed)
+        XCTAssertTrue(run.session.profile?.isValid == true)
+    }
+
+    func testObservationSeparatesMissingCameraMissingHandAndFreshRecovery() {
+        var session = PersonalCalibrationSession()
+        let hand = HandFeatures(index: Point(0.5, 0.35), palm: Point(0.5, 0.5))
+        session.start(at: 0)
+        XCTAssertEqual(session.snapshot.observation, .waitingForCamera)
+        session.tick(at: 0.1)
+        XCTAssertEqual(session.snapshot.observation, .waitingForCamera)
+        session.tick(at: 0.21)
+        XCTAssertEqual(session.snapshot.observation, .waitingForCamera)
+        session.tick(at: 7.99)
+        XCTAssertEqual(session.snapshot.observation, .waitingForCamera)
+        session.tick(at: 8.01)
+        XCTAssertEqual(session.snapshot.observation, .staleFrame)
+        XCTAssertTrue(session.snapshot.instruction.contains("아직 도착하지 않았습니다"))
+        XCTAssertEqual(session.snapshot.acceptedSamples, 0)
+        session.update(nil, capturedAt: 8.1, now: 8.13, confidenceQualified: false)
+        XCTAssertEqual(session.snapshot.observation, .searchingHand)
+        session.tick(at: 8.27)
+        XCTAssertEqual(session.snapshot.observation, .searchingHand)
+        session.tick(at: 8.34)
+        XCTAssertEqual(session.snapshot.observation, .staleFrame)
+        XCTAssertTrue(session.snapshot.instruction.contains("잠시 멈췄습니다"))
+        session.update(hand, capturedAt: 8.35, now: 8.38, confidenceQualified: true)
+        XCTAssertEqual(session.snapshot.observation, .collecting)
+        session.update(hand, capturedAt: 8.42, now: 8.45, confidenceQualified: true)
+        let progress = session.snapshot.stageProgress
+        XCTAssertGreaterThan(progress, 0)
+        session.tick(at: 8.67)
+        XCTAssertEqual(session.snapshot.observation, .staleFrame)
+        XCTAssertEqual(session.snapshot.stageProgress, progress)
+        session.reset()
+        XCTAssertEqual(session.snapshot.observation, .waitingForCamera)
+        XCTAssertEqual(session.snapshot.acceptedSamples, 0)
+    }
+
+    func testMovementRejectionsExplainConfidencePoseAndStaleFrames() {
+        var session = PersonalCalibrationSession()
+        let hand = HandFeatures(index: Point(0.5, 0.35), palm: Point(0.5, 0.5))
+        session.start(at: 0)
+        session.update(hand, capturedAt: 0.1, now: 0.13, confidenceQualified: false)
+        XCTAssertEqual(session.snapshot.observation, .adjustHand)
+        var nonPointer = hand; nonPointer.isPointer = false
+        session.update(nonPointer, capturedAt: 0.2, now: 0.23, confidenceQualified: true)
+        XCTAssertEqual(session.snapshot.observation, .pointIndex)
+        var scroll = hand; scroll.isScroll = true; scroll.isPointer = false
+        session.update(scroll, capturedAt: 0.3, now: 0.33, confidenceQualified: true)
+        XCTAssertEqual(session.snapshot.observation, .pointIndex)
+        var open = hand; open.isOpenPalm = true; open.isPointer = false
+        session.update(open, capturedAt: 0.4, now: 0.43, confidenceQualified: true)
+        XCTAssertEqual(session.snapshot.observation, .pointIndex)
+        var invalid = hand; invalid.palm.x = .nan
+        session.update(invalid, capturedAt: 0.5, now: 0.53, confidenceQualified: true)
+        XCTAssertEqual(session.snapshot.observation, .adjustHand)
+        session.update(hand, capturedAt: 0.6, now: 0.9, confidenceQualified: true)
+        XCTAssertEqual(session.snapshot.observation, .staleFrame)
+        XCTAssertEqual(session.snapshot.acceptedSamples, 0)
+        XCTAssertEqual(session.snapshot.stageProgress, 0)
+        XCTAssertEqual(session.snapshot.rejectedSamples, 6)
+        XCTAssertNil(session.profile)
     }
 
     func testInFlightImageFromBeforeCalibrationStartDoesNotCount() {

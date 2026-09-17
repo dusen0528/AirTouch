@@ -57,6 +57,10 @@ public enum PersonalCalibrationFailure: String, Sendable {
     }
 }
 
+public enum PersonalCalibrationObservation: String, Sendable {
+    case waitingForCamera, searchingHand, adjustHand, pointIndex, showThumb, staleFrame, collecting
+}
+
 public struct PersonalCalibrationSnapshot: Sendable {
     public let stage: PersonalCalibrationStage
     public let instruction: String
@@ -66,6 +70,7 @@ public struct PersonalCalibrationSnapshot: Sendable {
     public let rejectedSamples: Int
     public let pinchCount: Int
     public let failure: PersonalCalibrationFailure?
+    public let observation: PersonalCalibrationObservation
 }
 
 /// Camera-driven calibration: 4 s at rest, 7 s horizontally, 7 s vertically,
@@ -78,6 +83,7 @@ public struct PersonalCalibrationSession {
     private var createdAt = Date(timeIntervalSince1970: 0)
     private var stageStartedAt = 0.0
     private var lastCapture: Double?
+    private var lastFreshFrameAt: Double?
     private var lastAcceptedCapture: Double?
     private var stageSeconds = 0.0
     private var totalSeconds = 0.0
@@ -85,6 +91,7 @@ public struct PersonalCalibrationSession {
     private var rejectedSamples = 0
     private var stageSamples: [HandFeatures] = []
     private var feedback: String?
+    private var observation: PersonalCalibrationObservation = .waitingForCamera
     private var neutral = Point.zero
     private var steadyNoise = 0.0
     private var horizontalRange = 0.0
@@ -136,11 +143,13 @@ public struct PersonalCalibrationSession {
         return PersonalCalibrationSnapshot(stage: stage, instruction: feedback ?? instruction,
             stageProgress: stage == .completed ? 1 : local,
             progress: min(1, (offset + local) / 4), acceptedSamples: acceptedSamples,
-            rejectedSamples: rejectedSamples, pinchCount: pinchCount, failure: failure)
+            rejectedSamples: rejectedSamples, pinchCount: pinchCount, failure: failure,
+            observation: observation)
     }
 
-    /// `confidenceQualified` must reflect reliable required palm/index/ thumb
-    /// landmarks, not a guessed confidence. HandFeatures cannot carry that fact.
+    /// `confidenceQualified` must reflect reliable palm/index landmarks and,
+    /// during the pinch stage, the thumb. Movement calibration does not require
+    /// a visible thumb; HandFeatures separately indicates pinch reliability.
     public mutating func update(_ hand: HandFeatures?, capturedAt time: Double,
                                 now: Double, confidenceQualified: Bool) {
         guard stage.isCollecting else { return }
@@ -148,20 +157,37 @@ public struct PersonalCalibrationSession {
         guard stage.isCollecting else { return }
         guard time.isFinite, now.isFinite, time >= stageStartedAt, time <= now, now - time < 0.20,
               lastCapture.map({ time > $0 }) ?? true else {
-            reject("최신 카메라 영상을 기다리고 있습니다")
+            reject(.staleFrame, "최신 카메라 영상을 기다리고 있습니다")
             return
         }
-        lastCapture = time
-        guard confidenceQualified, let hand, hand.isValid, hand.isPinchReliable,
+        lastCapture = time; lastFreshFrameAt = now
+        guard let hand else {
+            reject(.searchingHand, "손을 카메라에 보여주세요. 손목과 검지가 화면 안에 들어오게 해주세요")
+            return
+        }
+        guard hand.isValid,
               (0...1).contains(hand.palm.x), (0...1).contains(hand.palm.y),
               (0...1).contains(hand.index.x), (0...1).contains(hand.index.y),
-              (0.045...0.8).contains(hand.palmScale), hand.pinchRatio <= 2.5,
-              !hand.isOpenPalm, !hand.isScroll else {
-            reject("손 전체와 엄지·검지가 보이도록 해주세요")
+              (0.045...0.8).contains(hand.palmScale), hand.pinchRatio <= 2.5 else {
+            reject(.adjustHand, "손 전체가 화면 안에 보이도록 위치를 조정해주세요")
+            return
+        }
+        // A folded thumb may be hidden while the palm and extended index remain
+        // reliable. Require it only when its separation is actually measured.
+        if stage == .pinch && !hand.isPinchReliable {
+            reject(.showThumb, "집는 간격을 확인할 수 있도록 엄지와 검지를 보여주세요")
+            return
+        }
+        guard confidenceQualified else {
+            reject(.adjustHand, "손바닥과 검지가 선명하게 보이도록 위치와 조명을 조정해주세요")
+            return
+        }
+        guard !hand.isOpenPalm, !hand.isScroll else {
+            reject(.pointIndex, "검지만 펴고 나머지 손가락은 편하게 접어주세요")
             return
         }
         if stage != .pinch && (!hand.isPointer || hand.pinchRatio < 0.5) {
-            reject("검지만 펴고 엄지와 간격을 두세요")
+            reject(.pointIndex, "검지만 펴고 엄지와 간격을 두세요")
             return
         }
         let interval = lastAcceptedCapture.map { time - $0 } ?? 0
@@ -169,7 +195,7 @@ public struct PersonalCalibrationSession {
         if dt == 0 { clearPlateau() }
         lastAcceptedCapture = time
         stageSeconds += dt; totalSeconds += dt
-        acceptedSamples += 1; stageSamples.append(hand); feedback = nil
+        acceptedSamples += 1; stageSamples.append(hand); feedback = nil; observation = .collecting
         if stage == .pinch { updatePinch(hand, dt: dt) }
         guard stageSeconds >= requiredSeconds else { return }
         switch stage {
@@ -189,6 +215,12 @@ public struct PersonalCalibrationSession {
         let limit = stage == .pinch ? 45.0 : max(20, requiredSeconds * 4)
         if time - stageStartedAt >= limit {
             fail(stage == .pinch && acceptedSamples > 0 ? .indistinctPinches : .insufficientSamples)
+        } else if let lastFreshFrameAt, time - lastFreshFrameAt >= 0.20 {
+            observation = .staleFrame
+            feedback = "카메라 영상이 잠시 멈췄습니다. 새 영상을 기다리고 있습니다"
+        } else if lastFreshFrameAt == nil && time - stageStartedAt >= 8 {
+            observation = .staleFrame
+            feedback = "카메라 영상이 아직 도착하지 않았습니다. 다른 카메라 앱을 닫고 다시 시작해주세요"
         }
     }
 
@@ -223,11 +255,13 @@ public struct PersonalCalibrationSession {
     private mutating func enter(_ next: PersonalCalibrationStage, at time: Double) {
         stage = next; stageStartedAt = time; stageSeconds = 0
         stageSamples.removeAll(keepingCapacity: true); lastAcceptedCapture = nil
+        observation = lastFreshFrameAt == nil ? .waitingForCamera : .collecting
         clearPlateau(); feedback = nil
     }
 
-    private mutating func reject(_ message: String) {
-        rejectedSamples += 1; feedback = message; lastAcceptedCapture = nil; clearPlateau()
+    private mutating func reject(_ state: PersonalCalibrationObservation, _ message: String) {
+        rejectedSamples += 1; feedback = message; observation = state
+        lastAcceptedCapture = nil; clearPlateau()
     }
 
     private mutating func clearPlateau() { plateau.removeAll(keepingCapacity: true); plateauSeconds = 0 }

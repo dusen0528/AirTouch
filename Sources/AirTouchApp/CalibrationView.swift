@@ -16,22 +16,43 @@ struct CalibrationView: View {
         case .idle: return "편하게 움직이는 범위를 알려주세요"
         }
     }
+
+    private var observationLabel: (text: String, symbol: String) {
+        switch snapshot.observation {
+        case .waitingForCamera: return ("카메라 연결을 기다리고 있어요", "video")
+        case .searchingHand: return ("손을 찾고 있어요", "hand.raised")
+        case .adjustHand: return ("손 위치를 조금 조정해주세요", "viewfinder")
+        case .pointIndex: return ("검지만 펴주세요", "hand.point.up")
+        case .showThumb: return ("엄지와 검지 끝을 보여주세요", "hand.pinch")
+        case .staleFrame: return ("최신 영상을 기다리고 있어요", "video.badge.ellipsis")
+        case .collecting: return ("손을 인식하고 있어요", "checkmark.circle.fill")
+        }
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 Text(title).font(.title2.weight(.semibold))
-                Text("카메라에 손 전체가 보이는 편한 자세에서 진행하세요. 약 30초 동안 손 떨림, 이동 범위, 집는 간격을 맞춥니다.")
+                Text("검지만 편 손을 카메라에 보여주세요. 약 30초 동안 손 떨림, 이동 범위, 집는 간격을 맞춥니다.")
                     .foregroundStyle(.secondary)
                 if model.isCalibrating {
-                    CameraMonitor(model: model)
-                    Text(snapshot.instruction).font(.title3.weight(.medium)).fixedSize(horizontal: false, vertical: true)
-                    ProgressView(value: snapshot.stageProgress).accessibilityLabel("현재 단계 진행률")
-                    HStack {
-                        Text("전체 \(Int(snapshot.progress * 100))%")
-                        Spacer()
-                        if snapshot.stage == .pinch { Text("집기 \(snapshot.pinchCount) / 3회") }
-                    }.font(.callout).monospacedDigit()
-                    Text("손을 놓치면 기다립니다. 움직임을 충분히 확인한 단계만 다음으로 넘어갑니다.")
+                    VStack(alignment: .leading, spacing: 12) {
+                        Label(observationLabel.text, systemImage: observationLabel.symbol)
+                            .foregroundStyle(snapshot.observation == .collecting ? Color.green : Color.secondary)
+                            .font(.callout.weight(.medium))
+                        Text(snapshot.instruction).font(.title3.weight(.medium)).fixedSize(horizontal: false, vertical: true)
+                        ProgressView(value: snapshot.stageProgress).accessibilityLabel("현재 단계 진행률")
+                        HStack {
+                            Text("현재 단계 \(Int(snapshot.stageProgress * 100))%")
+                            Spacer()
+                            Text("전체 \(Int(snapshot.progress * 100))%")
+                            if snapshot.stage == .pinch { Text("집기 \(snapshot.pinchCount) / 3회") }
+                        }.font(.callout).monospacedDigit()
+                    }
+                    CameraMonitor(model: model).frame(maxWidth: 440).frame(maxWidth: .infinity)
+                    Text(snapshot.stage == .pinch
+                         ? "지금은 엄지와 검지 끝이 모두 보여야 집는 간격을 확인할 수 있어요."
+                         : "검지와 손바닥이 보이면 진행됩니다. 엄지는 편하게 두세요.")
                         .font(.caption).foregroundStyle(.secondary)
                     Button("보정 취소") { model.cancelCalibration() }
                 } else if snapshot.stage == .completed, let profile = model.calibration.profile {

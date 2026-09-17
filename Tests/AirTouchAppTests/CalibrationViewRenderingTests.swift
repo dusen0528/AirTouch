@@ -65,8 +65,13 @@ final class CalibrationViewRenderingTests: XCTestCase {
                 progress.update(HandFeatures(index: Point(0.5, 0.35), palm: Point(0.5, 0.5)),
                     capturedAt: time, now: time, confidenceQualified: true)
             }
+            var waiting = PersonalCalibrationSession()
+            waiting.start(at: 0)
+            var missing = waiting
+            missing.update(nil, capturedAt: 0.1, now: 0.15, confidenceQualified: false)
             let cases: [(String, PersonalCalibrationSession)] = [
-                ("intro", PersonalCalibrationSession()), ("progress", progress),
+                ("intro", PersonalCalibrationSession()), ("waiting", waiting),
+                ("hand-missing", missing), ("progress", progress),
                 ("completed", try completedSession())
             ]
             var previousData: Data?
