@@ -1,0 +1,313 @@
+[0/1] Planning build
+Building for debugging...
+[0/4] Write swift-version--58304C5D6DBC2206.txt
+Build complete! (0.24s)
+Test Suite 'All tests' started at 2026-09-17 23:06:32.284.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-17 23:06:32.285.
+Test Suite 'AppWindowsTests' started at 2026-09-17 23:06:32.285.
+Test Case '-[AirTouchAppTests.AppWindowsTests testExplicitPreparationCreatesAnUnshownNonRestoringWindowWithTheSameModel]' started.
+Test Case '-[AirTouchAppTests.AppWindowsTests testExplicitPreparationCreatesAnUnshownNonRestoringWindowWithTheSameModel]' passed (1.040 seconds).
+Test Case '-[AirTouchAppTests.AppWindowsTests testPreparingAgainAfterCloseReusesTheSameRetainedWindowAndModel]' started.
+Test Case '-[AirTouchAppTests.AppWindowsTests testPreparingAgainAfterCloseReusesTheSameRetainedWindowAndModel]' passed (0.431 seconds).
+Test Case '-[AirTouchAppTests.AppWindowsTests testWindowCoordinatorDoesNotCreateAWindowAtInitialization]' started.
+Test Case '-[AirTouchAppTests.AppWindowsTests testWindowCoordinatorDoesNotCreateAWindowAtInitialization]' passed (0.098 seconds).
+Test Suite 'AppWindowsTests' passed at 2026-09-17 23:06:33.854.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 1.568 (1.569) seconds
+Test Suite 'CalibrationProfileStoreTests' started at 2026-09-17 23:06:33.854.
+Test Case '-[AirTouchAppTests.CalibrationProfileStoreTests testClearRemovesProfileAcrossInstancesAndPreservesManualSettings]' started.
+Test Case '-[AirTouchAppTests.CalibrationProfileStoreTests testClearRemovesProfileAcrossInstancesAndPreservesManualSettings]' passed (0.017 seconds).
+Test Case '-[AirTouchAppTests.CalibrationProfileStoreTests testInvalidProfileCannotOverwriteExistingValidProfileOrSettings]' started.
+Test Case '-[AirTouchAppTests.CalibrationProfileStoreTests testInvalidProfileCannotOverwriteExistingValidProfileOrSettings]' passed (0.008 seconds).
+Test Case '-[AirTouchAppTests.CalibrationProfileStoreTests testMissingCorruptAndInvalidStoredDataAreNotLoaded]' started.
+Test Case '-[AirTouchAppTests.CalibrationProfileStoreTests testMissingCorruptAndInvalidStoredDataAreNotLoaded]' passed (0.005 seconds).
+Test Case '-[AirTouchAppTests.CalibrationProfileStoreTests testSaveSurvivesNewStoreAndDefaultsInstanceWithDerivedSettings]' started.
+Test Case '-[AirTouchAppTests.CalibrationProfileStoreTests testSaveSurvivesNewStoreAndDefaultsInstanceWithDerivedSettings]' passed (0.004 seconds).
+Test Suite 'CalibrationProfileStoreTests' passed at 2026-09-17 23:06:33.888.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.034 (0.034) seconds
+Test Suite 'CalibrationViewRenderingTests' started at 2026-09-17 23:06:33.888.
+Test Case '-[AirTouchAppTests.CalibrationViewRenderingTests testAppModelAppliesReloadsAndResetsCompletedCalibration]' started.
+Test Case '-[AirTouchAppTests.CalibrationViewRenderingTests testAppModelAppliesReloadsAndResetsCompletedCalibration]' passed (0.194 seconds).
+Test Case '-[AirTouchAppTests.CalibrationViewRenderingTests testCalibrationIntroProgressAndCompletedViewsRenderOffscreen]' started.
+Test Case '-[AirTouchAppTests.CalibrationViewRenderingTests testCalibrationIntroProgressAndCompletedViewsRenderOffscreen]' passed (0.346 seconds).
+Test Suite 'CalibrationViewRenderingTests' passed at 2026-09-17 23:06:34.429.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.540 (0.540) seconds
+Test Suite 'ComfortableControlTests' started at 2026-09-17 23:06:34.429.
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testBendingIndexToPrepareClickDoesNotMoveTarget]' started.
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testBendingIndexToPrepareClickDoesNotMoveTarget]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testDeliberateDragReleasesWithoutJumpAndCanMoveAgain]' started.
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testDeliberateDragReleasesWithoutJumpAndCanMoveAgain]' passed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testPrecisionGainDoesNotDependOnCameraFrameRate]' started.
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testPrecisionGainDoesNotDependOnCameraFrameRate]' passed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testSlowMovementIsPreciseWhileFastMovementCoversDistance]' started.
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testSlowMovementIsPreciseWhileFastMovementCoversDistance]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testSlowScrollStillMovesBothWaysAndReturnsWithoutJump]' started.
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testSlowScrollStillMovesBothWaysAndReturnsWithoutJump]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testSmallHandShiftDuringClickDoesNotBecomeDrag]' started.
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testSmallHandShiftDuringClickDoesNotBecomeDrag]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testStationaryScrollPoseDoesNotCreep]' started.
+Test Case '-[AirTouchCoreTests.ComfortableControlTests testStationaryScrollPoseDoesNotCreep]' passed (0.000 seconds).
+Test Suite 'ComfortableControlTests' passed at 2026-09-17 23:06:34.433.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.004 (0.004) seconds
+Test Suite 'CursorStatusOverlayTests' started at 2026-09-17 23:06:34.433.
+Test Case '-[AirTouchAppTests.CursorStatusOverlayTests testLockConfirmationAndDropReleaseHaveDistinctFeedback]' started.
+Test Case '-[AirTouchAppTests.CursorStatusOverlayTests testLockConfirmationAndDropReleaseHaveDistinctFeedback]' passed (0.001 seconds).
+Test Case '-[AirTouchAppTests.CursorStatusOverlayTests testMissingHandAndPhysicalHandoffOverrideGestureStatus]' started.
+Test Case '-[AirTouchAppTests.CursorStatusOverlayTests testMissingHandAndPhysicalHandoffOverrideGestureStatus]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.CursorStatusOverlayTests testPanelCannotTakeFocusOrConsumeClicksAndHideIsIdempotent]' started.
+Test Case '-[AirTouchAppTests.CursorStatusOverlayTests testPanelCannotTakeFocusOrConsumeClicksAndHideIsIdempotent]' passed (0.005 seconds).
+Test Suite 'CursorStatusOverlayTests' passed at 2026-09-17 23:06:34.439.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.006 (0.006) seconds
+Test Suite 'DragLockDemonstrationTests' started at 2026-09-17 23:06:34.439.
+Test Case '-[AirTouchCoreTests.DragLockDemonstrationTests testDemonstrationShowsUnlockedAndLockedDragging]' started.
+Test Case '-[AirTouchCoreTests.DragLockDemonstrationTests testDemonstrationShowsUnlockedAndLockedDragging]' passed (0.003 seconds).
+Test Suite 'DragLockDemonstrationTests' passed at 2026-09-17 23:06:34.442.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.003 (0.003) seconds
+Test Suite 'DragLockTests' started at 2026-09-17 23:06:34.442.
+Test Case '-[AirTouchCoreTests.DragLockTests testCalibratedDragToleranceUsesFiniteBoundsAndLeavesDirectStyleAlone]' started.
+Test Case '-[AirTouchCoreTests.DragLockTests testCalibratedDragToleranceUsesFiniteBoundsAndLeavesDirectStyleAlone]' passed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.DragLockTests testCancellingDropReanchorsBeforeResumingMovement]' started.
+Test Case '-[AirTouchCoreTests.DragLockTests testCancellingDropReanchorsBeforeResumingMovement]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.DragLockTests testClickWithoutMovementStillReleasesAndDefaultDragDoesNotLock]' started.
+Test Case '-[AirTouchCoreTests.DragLockTests testClickWithoutMovementStillReleasesAndDefaultDragDoesNotLock]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.DragLockTests testDisablingLockOrCaptureDeadlineReleasesHeldInput]' started.
+Test Case '-[AirTouchCoreTests.DragLockTests testDisablingLockOrCaptureDeadlineReleasesHeldInput]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.DragLockTests testHiddenThumbAfterDropDoesNotRearmClick]' started.
+Test Case '-[AirTouchCoreTests.DragLockTests testHiddenThumbAfterDropDoesNotRearmClick]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.DragLockTests testLockedDragCannotStartScrollOrSecondaryClick]' started.
+Test Case '-[AirTouchCoreTests.DragLockTests testLockedDragCannotStartScrollOrSecondaryClick]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.DragLockTests testLockedPointerMovesWithHiddenThumbButHeldDragReleases]' started.
+Test Case '-[AirTouchCoreTests.DragLockTests testLockedPointerMovesWithHiddenThumbButHeldDragReleases]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.DragLockTests testLossAndFrameTimeoutReleaseWithoutReacquiringLock]' started.
+Test Case '-[AirTouchCoreTests.DragLockTests testLossAndFrameTimeoutReleaseWithoutReacquiringLock]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.DragLockTests testOpenPalmStopPauseRebaseAndRestartReleaseExactlyOnce]' started.
+Test Case '-[AirTouchCoreTests.DragLockTests testOpenPalmStopPauseRebaseAndRestartReleaseExactlyOnce]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.DragLockTests testReleaseLocksDragThenFreshPinchDropsOnceWithoutClickingAgain]' started.
+Test Case '-[AirTouchCoreTests.DragLockTests testReleaseLocksDragThenFreshPinchDropsOnceWithoutClickingAgain]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.DragLockTests testSingleFramePinchNoiseCannotDropOrAccumulateConfirmation]' started.
+Test Case '-[AirTouchCoreTests.DragLockTests testSingleFramePinchNoiseCannotDropOrAccumulateConfirmation]' passed (0.000 seconds).
+Test Suite 'DragLockTests' passed at 2026-09-17 23:06:34.446.
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.003 (0.004) seconds
+Test Suite 'FeatureExtractorTests' started at 2026-09-17 23:06:34.446.
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testFilterResetsAfterGapAndKeepsStationaryInputStable]' started.
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testFilterResetsAfterGapAndKeepsStationaryInputStable]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testFoldedFingersProjectedTowardWristDoNotLookLikeOpenPalm]' started.
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testFoldedFingersProjectedTowardWristDoNotLookLikeOpenPalm]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testPalmAndAspectCorrectPinchDistance]' started.
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testPalmAndAspectCorrectPinchDistance]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testPointingHandDoesNotRequireOccludedFoldedFingertips]' started.
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testPointingHandDoesNotRequireOccludedFoldedFingertips]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testScaleAndRotationDoNotChangePinchRatio]' started.
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testScaleAndRotationDoNotChangePinchRatio]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testUncertainThumbDisablesClickButKeepsTracking]' started.
+Test Case '-[AirTouchCoreTests.FeatureExtractorTests testUncertainThumbDisablesClickButKeepsTracking]' passed (0.000 seconds).
+Test Suite 'FeatureExtractorTests' passed at 2026-09-17 23:06:34.448.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.001 (0.002) seconds
+Test Suite 'GestureEngineTests' started at 2026-09-17 23:06:34.448.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testActivationAtDifferentFrameRates]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testActivationAtDifferentFrameRates]' passed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testCannotPinchToActivate]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testCannotPinchToActivate]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testCompleteDemonstrationClicksDragsScrollsAndReleases]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testCompleteDemonstrationClicksDragsScrollsAndReleases]' passed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testContinuousCameraWithInferenceLatencyCanActivateAndMove]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testContinuousCameraWithInferenceLatencyCanActivateAndMove]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testDragHasNoExtraClickAndDoesNotJumpBackOnRelease]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testDragHasNoExtraClickAndDoesNotJumpBackOnRelease]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testHandSwitchSuspendsInsteadOfTeleporting]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testHandSwitchSuspendsInsteadOfTeleporting]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testHeldPinchIsOneBalancedClick]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testHeldPinchIsOneBalancedClick]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testHysteresisDoesNotRepeatPressAtBoundary]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testHysteresisDoesNotRepeatPressAtBoundary]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testInvalidHandReleasesAfterTimeoutAndNeedsActivation]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testInvalidHandReleasesAfterTimeoutAndNeedsActivation]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testLatencyDoesNotPreventReleaseWhenCameraActuallyStops]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testLatencyDoesNotPreventReleaseWhenCameraActuallyStops]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testMissingCandidateFrameCannotCountTowardsHold]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testMissingCandidateFrameCannotCountTowardsHold]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testNonFiniteFeaturesNeverCreateInput]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testNonFiniteFeaturesNeverCreateInput]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testPinchInterruptsScrollActivationTimer]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testPinchInterruptsScrollActivationTimer]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testPreviousGenerationDuplicateAndStaleFramesAreDiscarded]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testPreviousGenerationDuplicateAndStaleFramesAreDiscarded]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testRestAndReactivationUseCurrentCursor]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testRestAndReactivationUseCurrentCursor]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testScrollCannotStealHeldButton]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testScrollCannotStealHeldButton]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testScrollDoesNotMoveCursorOrReplayEntryMovement]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testScrollDoesNotMoveCursorOrReplayEntryMovement]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testSecondaryPinchClicksOnceOnReleaseWithoutPrimaryPress]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testSecondaryPinchClicksOnceOnReleaseWithoutPrimaryPress]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testSecondaryPinchLossOrMovementCancelsClick]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testSecondaryPinchLossOrMovementCancelsClick]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testShortOcclusionRebasesMovement]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testShortOcclusionRebasesMovement]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testShortPinchDoesNotClick]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testShortPinchDoesNotClick]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testSmallMovementAccumulatesAndScreenEdgeDoesNotStoreDebt]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testSmallMovementAccumulatesAndScreenEdgeDoesNotStoreDebt]' passed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testUncertainThumbCanMoveButCannotPress]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testUncertainThumbCanMoveButCannotPress]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testUncertainThumbReleasesExistingPressImmediately]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testUncertainThumbReleasesExistingPressImmediately]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureEngineTests testWatchdogReleasesWithoutAnyNewFramesAndIsIdempotent]' started.
+Test Case '-[AirTouchCoreTests.GestureEngineTests testWatchdogReleasesWithoutAnyNewFramesAndIsIdempotent]' passed (0.000 seconds).
+Test Suite 'GestureEngineTests' passed at 2026-09-17 23:06:34.456.
+	 Executed 25 tests, with 0 failures (0 unexpected) in 0.006 (0.008) seconds
+Test Suite 'GestureUsabilityTests' started at 2026-09-17 23:06:34.456.
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testBriefAmbiguousScrollPoseFreezesThenResumesWithoutJump]' started.
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testBriefAmbiguousScrollPoseFreezesThenResumesWithoutJump]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testQuickDeliberatePinchClicksButSingleFrameContactDoesNot]' started.
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testQuickDeliberatePinchClicksButSingleFrameContactDoesNot]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testSecondClickKeepsTargetThroughSmallReleaseMotion]' started.
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testSecondClickKeepsTargetThroughSmallReleaseMotion]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testSustainedAmbiguousScrollStopsAndOpenPalmStillStopsImmediately]' started.
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testSustainedAmbiguousScrollStopsAndOpenPalmStillStopsImmediately]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testTwoFingerPoseCanStartAndResumeScrollingDirectly]' started.
+Test Case '-[AirTouchCoreTests.GestureUsabilityTests testTwoFingerPoseCanStartAndResumeScrollingDirectly]' passed (0.000 seconds).
+Test Suite 'GestureUsabilityTests' passed at 2026-09-17 23:06:34.457.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'LatestValueDeliveryTests' started at 2026-09-17 23:06:34.457.
+Test Case '-[AirTouchCoreTests.LatestValueDeliveryTests testBusyConsumerReceivesOnlyNewestFrameWithoutGrowingQueue]' started.
+Test Case '-[AirTouchCoreTests.LatestValueDeliveryTests testBusyConsumerReceivesOnlyNewestFrameWithoutGrowingQueue]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.LatestValueDeliveryTests testFrameArrivingDuringConsumptionGetsItsOwnDelivery]' started.
+Test Case '-[AirTouchCoreTests.LatestValueDeliveryTests testFrameArrivingDuringConsumptionGetsItsOwnDelivery]' passed (0.000 seconds).
+Test Suite 'LatestValueDeliveryTests' passed at 2026-09-17 23:06:34.458.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+Test Suite 'MovementContinuityTests' started at 2026-09-17 23:06:34.458.
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testBriefUncertainFingerPoseKeepsPalmMovementContinuous]' started.
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testBriefUncertainFingerPoseKeepsPalmMovementContinuous]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testDelayedButContinuouslyDeliveredPointerFramesDoNotRearm]' started.
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testDelayedButContinuouslyDeliveredPointerFramesDoNotRearm]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer]' started.
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testFoldedMiddleFingerNearThumbDoesNotStealPointer]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testFrameSilenceStillStopsPointer]' started.
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testFrameSilenceStillStopsPointer]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testPreparedSecondaryPinchWorksBeforeAndAfterScrollActivation]' started.
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testPreparedSecondaryPinchWorksBeforeAndAfterScrollActivation]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testProlongedPoseUncertaintyAndOpenPalmStillStopMovement]' started.
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testProlongedPoseUncertaintyAndOpenPalmStillStopMovement]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testSavedUserLatencySegmentWhenProvided]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/MovementContinuityTests.swift:50: -[AirTouchCoreTests.MovementContinuityTests testSavedUserLatencySegmentWhenProvided] : Test skipped - Local user trace is intentionally not stored in Git
+Test Case '-[AirTouchCoreTests.MovementContinuityTests testSavedUserLatencySegmentWhenProvided]' skipped (0.001 seconds).
+Test Suite 'MovementContinuityTests' passed at 2026-09-17 23:06:34.461.
+	 Executed 7 tests, with 1 test skipped and 0 failures (0 unexpected) in 0.002 (0.003) seconds
+Test Suite 'PersonalCalibrationTests' started at 2026-09-17 23:06:34.461.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testBoundsAndNoiseAdaptationAreConservative]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testBoundsAndNoiseAdaptationAreConservative]' passed (0.003 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testCalibratedPinchThresholdChangesActualGestureRecognition]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testCalibratedPinchThresholdChangesActualGestureRecognition]' passed (0.002 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testCancelledAndRestartedSessionDoesNotReusePreviousSamples]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testCancelledAndRestartedSessionDoesNotReusePreviousSamples]' passed (0.002 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testComfortablePinchCanCalibrateAboveOldFixedThreshold]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testComfortablePinchCanCalibrateAboveOldFixedThreshold]' passed (0.002 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testDeliberateMotionIsNotLearnedAsIdleNoise]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testDeliberateMotionIsNotLearnedAsIdleNoise]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testHoldingStillOrOnlyMovingOneSideDoesNotSaveRange]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testHoldingStillOrOnlyMovingOneSideDoesNotSaveRange]' passed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testInFlightImageFromBeforeCalibrationStartDoesNotCount]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testInFlightImageFromBeforeCalibrationStartDoesNotCount]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testPersistedOutOfBoundsProfileIsRejectedByValidation]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testPersistedOutOfBoundsProfileIsRejectedByValidation]' passed (0.002 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testRealSampleSequenceCompletesAndPersistsOnlyBoundedAggregates]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testRealSampleSequenceCompletesAndPersistsOnlyBoundedAggregates]' passed (0.002 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testSparseFramesCannotPassByAccruingMissingIntervals]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testSparseFramesCannotPassByAccruingMissingIntervals]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testStaleDuplicateUnqualifiedAndOccludedSamplesDoNotEarnTime]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testStaleDuplicateUnqualifiedAndOccludedSamplesDoNotEarnTime]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testThreeFastPinchesStillRequireAdequateObservedTime]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testThreeFastPinchesStillRequireAdequateObservedTime]' passed (0.002 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testTimeAloneAndCameraAbsenceNeverCompleteCalibration]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testTimeAloneAndCameraAbsenceNeverCompleteCalibration]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testUnclearPinchesAndSingleFrameContactsCannotProduceProfile]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testUnclearPinchesAndSingleFrameContactsCannotProduceProfile]' passed (0.004 seconds).
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testVerticalRangeAlsoRequiresActualMovement]' started.
+Test Case '-[AirTouchCoreTests.PersonalCalibrationTests testVerticalRangeAlsoRequiresActualMovement]' passed (0.002 seconds).
+Test Suite 'PersonalCalibrationTests' passed at 2026-09-17 23:06:34.485.
+	 Executed 15 tests, with 0 failures (0 unexpected) in 0.023 (0.024) seconds
+Test Suite 'ResponsivenessTests' started at 2026-09-17 23:06:34.485.
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testDirectControlSingleAmbiguousPoseDoesNotRequireReactivation]' started.
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testDirectControlSingleAmbiguousPoseDoesNotRequireReactivation]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testFilterRespondsWithin25MillisecondsDuringMotion]' started.
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testFilterRespondsWithin25MillisecondsDuringMotion]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testMovingFilterAddsLessThan50MillisecondsOfLag]' started.
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testMovingFilterAddsLessThan50MillisecondsOfLag]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testScrollReturnsToPointerWithoutAnotherHoldOrJump]' started.
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testScrollReturnsToPointerWithoutAnotherHoldOrJump]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testStationaryNoiseRemainsSmallAndMotionDoesNotOvershoot]' started.
+Test Case '-[AirTouchCoreTests.ResponsivenessTests testStationaryNoiseRemainsSmallAndMotionDoesNotOvershoot]' passed (0.000 seconds).
+Test Suite 'ResponsivenessTests' passed at 2026-09-17 23:06:34.486.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'ScrollTraceReplayTests' started at 2026-09-17 23:06:34.486.
+Test Case '-[AirTouchCoreTests.ScrollTraceReplayTests testLocalV035ScrollResumeTraceWhenProvided]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/ScrollTraceReplayTests.swift:7: -[AirTouchCoreTests.ScrollTraceReplayTests testLocalV035ScrollResumeTraceWhenProvided] : Test skipped - User trace stays local and is not stored in Git
+Test Case '-[AirTouchCoreTests.ScrollTraceReplayTests testLocalV035ScrollResumeTraceWhenProvided]' skipped (0.000 seconds).
+Test Suite 'ScrollTraceReplayTests' passed at 2026-09-17 23:06:34.486.
+	 Executed 1 test, with 1 test skipped and 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'SystemOutputGateTests' started at 2026-09-17 23:06:34.486.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testBalancedPressAndDragRejectDuplicates]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testBalancedPressAndDragRejectDuplicates]' passed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testBeginAloneDoesNotAuthorizeNewPressWithoutValidHand]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testBeginAloneDoesNotAuthorizeNewPressWithoutValidHand]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testContinuousDeliveryDoesNotShutDownBetweenDelayedFrames]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testContinuousDeliveryDoesNotShutDownBetweenDelayedFrames]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testDisplayMappingUsesNegativeOriginWithoutRetinaScaling]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testDisplayMappingUsesNegativeOriginWithoutRetinaScaling]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testDuplicateCaptureCannotRefreshDeliveryDeadline]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testDuplicateCaptureCannotRefreshDeliveryDeadline]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testEmergencyStopCannotBeUndoneByQueuedFrames]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testEmergencyStopCannotBeUndoneByQueuedFrames]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testFirstFreshCameraFrameCanPredateOutputSessionStart]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testFirstFreshCameraFrameCanPredateOutputSessionStart]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testIndependentWatchdogReleasesWhenUIStopsSendingFrames]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testIndependentWatchdogReleasesWhenUIStopsSendingFrames]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testInvalidHandsCannotKeepButtonHeldWithFreshFrames]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testInvalidHandsCannotKeepButtonHeldWithFreshFrames]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testNonFiniteEventsAreRejectedAndReleaseUsesLastPosition]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testNonFiniteEventsAreRejectedAndReleaseUsesLastPosition]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testPartiallyOccludedCameraHandWithLatencyReachesSystemOutput]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testPartiallyOccludedCameraHandWithLatencyReachesSystemOutput]' passed (0.001 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testPermissionRevocationReleasesOnceAndDisarms]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testPermissionRevocationReleasesOnceAndDisarms]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testRebaseReleasesHeldStateAndKeepsActualPointerLocation]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testRebaseReleasesHeldStateAndKeepsActualPointerLocation]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testRequiresBeginAndMatchingSession]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testRequiresBeginAndMatchingSession]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testSecondaryClickRequiresFreshHandAndCannotInterruptDrag]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testSecondaryClickRequiresFreshHandAndCannotInterruptDrag]' passed (0.000 seconds).
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testStaleOrFutureHeartbeatCannotExtendLease]' started.
+Test Case '-[AirTouchCoreTests.SystemOutputGateTests testStaleOrFutureHeartbeatCannotExtendLease]' passed (0.000 seconds).
+Test Suite 'SystemOutputGateTests' passed at 2026-09-17 23:06:34.491.
+	 Executed 16 tests, with 0 failures (0 unexpected) in 0.003 (0.004) seconds
+Test Suite 'SystemTrackingControllerTests' started at 2026-09-17 23:06:34.491.
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testIndependentWatchdogReleasesHeldInputWhilePresentationIsBlocked]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testIndependentWatchdogReleasesHeldInputWhilePresentationIsBlocked]' passed (0.034 seconds).
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testInputProceedsWhilePresentationExecutorIsBlockedAndOnlyLatestSnapshotWaits]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testInputProceedsWhilePresentationExecutorIsBlockedAndOnlyLatestSnapshotWaits]' passed (0.001 seconds).
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testPauseReleasesThenRebasesOnlyAfterDeadlineUsingFreshCapture]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testPauseReleasesThenRebasesOnlyAfterDeadlineUsingFreshCapture]' passed (0.001 seconds).
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testPhysicalMouseButtonsDelayInitialAcquisitionAndRebaseAtAcquisition]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testPhysicalMouseButtonsDelayInitialAcquisitionAndRebaseAtAcquisition]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testRestartCannotProcessPreviousGenerationEvenIfItsSequenceIsLarger]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testRestartCannotProcessPreviousGenerationEvenIfItsSequenceIsLarger]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testStaleFutureDuplicateAndOldGenerationFramesNeverReachSink]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testStaleFutureDuplicateAndOldGenerationFramesNeverReachSink]' passed (0.001 seconds).
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testStopReleasesHeldButtonRejectsRoutingAndInvalidatesQueuedPresentation]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testStopReleasesHeldButtonRejectsRoutingAndInvalidatesQueuedPresentation]' passed (0.001 seconds).
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testTimingSummariesRemainBoundedWhileCumulativeCountsKeepAllProcessedFrames]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingControllerTests testTimingSummariesRemainBoundedWhileCumulativeCountsKeepAllProcessedFrames]' passed (0.013 seconds).
+Test Suite 'SystemTrackingControllerTests' passed at 2026-09-17 23:06:34.542.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.051 (0.051) seconds
+Test Suite 'AirTouchPackageTests.xctest' passed at 2026-09-17 23:06:34.542.
+	 Executed 121 tests, with 2 tests skipped and 0 failures (0 unexpected) in 2.247 (2.257) seconds
+Test Suite 'All tests' passed at 2026-09-17 23:06:34.542.
+	 Executed 121 tests, with 2 tests skipped and 0 failures (0 unexpected) in 2.247 (2.259) seconds
+POINTER_TRAVEL_PT slow=145.74541281948768 fast=593.7752843258318
+CONTINUOUS_POINTER_INTERRUPTED_FRAMES=0
+RESPONSIVE_FILTER_LAG_MS=21.22594718122142
+FILTER_MOTION_LAG_MS=21.22594718122142
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

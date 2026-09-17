@@ -1,0 +1,65 @@
+{
+  "accessibilityPermission" : true,
+  "activeFrames" : [
+
+  ],
+  "appVersion" : "0.4.1",
+  "buttonHeld" : false,
+  "cameraPermission" : true,
+  "captureConfiguration" : {
+
+  },
+  "captureDrops" : {
+
+  },
+  "captureSize" : [
+    0,
+    0
+  ],
+  "captureToInferenceP95Ms" : null,
+  "clicks" : 1,
+  "coalescedFrames" : 0,
+  "controlStyle" : "comfortable",
+  "dragLockEnabled" : true,
+  "drops" : 1,
+  "engineReason" : "데모 완료",
+  "frames" : 660,
+  "inputEvents" : 296,
+  "interruptionReasons" : {
+    "쉬는 중 · 검지를 펴면 다시 시작합니다" : 1
+  },
+  "isRunning" : false,
+  "minimumCutoff" : 1.5,
+  "note" : "합성 데모는 카메라 정확도나 실제 OS 제어 검증 결과가 아닙니다. 영상은 저장하지 않습니다.",
+  "os" : "Version 26.5 (Build 25F71)",
+  "osInputEnabled" : false,
+  "personalCalibrationApplied" : false,
+  "physicalHandoffs" : 0,
+  "recentFrames" : [
+
+  ],
+  "schemaVersion" : 6,
+  "scrollDistance" : 353.555503226327,
+  "sensitivity" : 1.6000000000000001,
+  "showCursorStatus" : true,
+  "source" : "synthetic-demo",
+  "staleFrames" : 0,
+  "state" : "suspended",
+  "status" : "데모 완료 · 실제 손 인식은 카메라 연습에서 확인하세요",
+  "systemIntentCount" : 0,
+  "traceDelivery" : "received-frames",
+  "transitions" : [
+    "suspended → pointer",
+    "pointer → pinchCandidate",
+    "pinchCandidate → pressed",
+    "pressed → pointer",
+    "pointer → pinchCandidate",
+    "pinchCandidate → pressed",
+    "pressed → dragging",
+    "dragging → pointer",
+    "pointer → scrolling",
+    "scrolling → suspended",
+    "suspended → pointer"
+  ],
+  "validHandFrames" : 0
+}

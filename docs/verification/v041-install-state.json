@@ -1,0 +1,63 @@
+{
+  "appVersion": "0.4.1",
+  "build": "11",
+  "bundleID": "dev.airtouch.mac",
+  "LSUIElement": true,
+  "installedApp": "/Users/inho/Applications/AirTouch.app",
+  "registeredApps": [
+    "/Users/inho/Applications/AirTouch.app"
+  ],
+  "strictSignatureValid": true,
+  "installedBinarySHA256": "9593a315264f657e6503ed18dba9c5d27ac684869009617eab1edebc0ca64133",
+  "firstLaunch": {
+    "apps": [
+      {
+        "activationPolicy": 1,
+        "bundlePath": "/Users/inho/Applications/AirTouch.app",
+        "isActive": false,
+        "pid": 16375
+      }
+    ],
+    "windows": [
+      {
+        "bounds": {
+          "Height": 42,
+          "Width": 220,
+          "X": 0,
+          "Y": 1287
+        },
+        "layer": 3,
+        "onScreen": false
+      }
+    ]
+  },
+  "normalRelaunch": {
+    "apps": [
+      {
+        "activationPolicy": 1,
+        "bundlePath": "/Users/inho/Applications/AirTouch.app",
+        "isActive": false,
+        "pid": 16711
+      }
+    ],
+    "windows": [
+      {
+        "bounds": {
+          "Height": 42,
+          "Width": 220,
+          "X": 0,
+          "Y": 1287
+        },
+        "layer": 3,
+        "onScreen": false
+      }
+    ]
+  },
+  "temporaryPackageRemoved": true,
+  "temporaryInstallBackupRemoved": true,
+  "cameraPermissionInInstalledReport": true,
+  "accessibilityPermissionInInstalledReport": true,
+  "directMenuClickVerified": false,
+  "physicalHandOSInputVerified": false,
+  "uiVerificationLimitation": "Computer Use native pipe closed; subsequent retry timeout -10005."
+}
