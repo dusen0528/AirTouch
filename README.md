@@ -106,6 +106,7 @@ macOS 14 이상과 빌드용 Xcode가 필요하다. 외부 패키지 의존성�
 - [검증 계획](docs/validation-plan.md)
 - [구현·검증 현황](docs/implementation-status.md)
 - [검색 유입·ASO 준비](docs/aso/README.md) · 등록용 문구, 검색어 가설, 측정 도구와 배포 제약
+- [손 이동 + 표정 동작 조사](docs/research/README.md) · macOS 대체 포인터 동작과 공개 얼굴 인식 SDK, 통합 전 확인 사항
 
 ## 버전과 커밋
 
