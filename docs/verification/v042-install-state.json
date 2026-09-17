@@ -1,0 +1,33 @@
+{
+  "appVersion": "0.4.2",
+  "build": "12",
+  "bundleID": "dev.airtouch.mac",
+  "LSUIElement": true,
+  "installedApp": "/Users/inho/Applications/AirTouch.app",
+  "runningState": {
+    "apps": [
+      {
+        "activationPolicy": 1,
+        "bundlePath": "/Users/inho/Applications/AirTouch.app",
+        "isActive": false,
+        "pid": 44321
+      }
+    ],
+    "windows": [
+      {
+        "bounds": {
+          "Height": 42,
+          "Width": 220,
+          "X": 0,
+          "Y": 1287
+        },
+        "layer": 3,
+        "onScreen": false
+      }
+    ]
+  },
+  "installedBinarySHA256": "25bf71c0649e79524b2d5111ad647dab6ac68c58413f1bf3e7d158575b6842b1",
+  "temporaryPackageRemoved": true,
+  "temporaryInstallBackupRemoved": true,
+  "physicalHandOSInputVerified": false
+}
