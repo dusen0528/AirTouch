@@ -264,8 +264,8 @@ final class PersonalCalibrationTests: XCTestCase {
         XCTAssertNil(run.session.profile)
         let beforeDropouts = run.session.snapshot.stageProgress
         for n in 0..<120 { run.frame(qualified: !n.isMultiple(of: 2)) }
-        XCTAssertEqual(run.session.snapshot.stageProgress, beforeDropouts,
-                       "Pinch-stage time still needs consecutive valid observations")
+        XCTAssertEqual(run.session.snapshot.stageProgress - beforeDropouts, 2.0 / 6, accuracy: 0.01,
+                       "Only the 60 qualified frames earn two seconds; missing frames earn none")
         XCTAssertNil(run.session.profile)
         for _ in 0..<140 where run.session.stage == .pinch { run.frame() }
         XCTAssertEqual(run.session.stage, .completed)

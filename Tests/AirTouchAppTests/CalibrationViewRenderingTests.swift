@@ -79,6 +79,7 @@ final class CalibrationViewRenderingTests: XCTestCase {
             let cases: [(String, PersonalCalibrationSession)] = [
                 ("intro", PersonalCalibrationSession()), ("waiting", waiting),
                 ("hand-missing", missing), ("progress", progress), ("retry", retry),
+                ("pinch-hold", try completedSession(stopDuringPinch: true)),
                 ("completed", try completedSession())
             ]
             var previousData: Data?
@@ -122,7 +123,7 @@ final class CalibrationViewRenderingTests: XCTestCase {
         }
     }
 
-    private func completedSession() throws -> PersonalCalibrationSession {
+    private func completedSession(stopDuringPinch: Bool = false) throws -> PersonalCalibrationSession {
         var session = PersonalCalibrationSession()
         session.start(at: 0, date: Date(timeIntervalSince1970: 1_800_000_000))
         var time = 0.0
@@ -135,6 +136,14 @@ final class CalibrationViewRenderingTests: XCTestCase {
         for _ in 0..<150 where session.stage == .steady { feed() }
         for n in 0..<250 where session.stage == .horizontal { feed(Point(0.5 + sin(Double(n) / 20) * 0.18, 0.5)) }
         for n in 0..<250 where session.stage == .vertical { feed(Point(0.5, 0.5 + sin(Double(n) / 20) * 0.16)) }
+        if stopDuringPinch {
+            for _ in 0..<4 { feed() }
+            time += 1 / 30
+            session.update(nil, capturedAt: time, now: time, confidenceQualified: false)
+            XCTAssertEqual(session.stage, .pinch)
+            XCTAssertGreaterThan(session.snapshot.pinchHoldProgress, 0)
+            return session
+        }
         for _ in 0..<30 { feed() }
         for _ in 0..<3 {
             for _ in 0..<20 { feed(pinch: 0.15) }

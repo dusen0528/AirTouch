@@ -44,7 +44,9 @@ struct CalibrationView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 Text(title).font(.title2.weight(.semibold))
-                Text("검지만 편 손을 카메라에 보여주세요. 약 30초 동안 손 떨림, 이동 범위, 집는 간격을 맞춥니다.")
+                Text(snapshot.stage == .pinch
+                     ? "편한 위치에서 엄지와 검지를 모았다 벌려주세요. 안내가 바뀌면 다음 동작으로 이어가면 됩니다."
+                     : "검지만 편 손을 카메라에 보여주세요. 약 30초 동안 손 떨림, 이동 범위, 집는 간격을 맞춥니다.")
                     .foregroundStyle(.secondary)
                 if model.isCalibrating {
                     VStack(alignment: .leading, spacing: 12) {
@@ -56,6 +58,13 @@ struct CalibrationView: View {
                             Label(recoveryInstruction, systemImage: "arrow.clockwise")
                                 .font(.callout).foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
+                        }
+                        if snapshot.stage == .pinch && snapshot.pinchCount < 3 {
+                            ProgressView("현재 손 모양 확인", value: snapshot.pinchHoldProgress)
+                                .font(.caption).tint(.green)
+                                .accessibilityLabel("집기 동작 확인 진행률")
+                            Text("잠깐 놓쳐도 이어서 확인해요. 안내가 바뀔 때까지 손 모양을 유지해주세요.")
+                                .font(.caption).foregroundStyle(.secondary)
                         }
                         ProgressView(value: snapshot.stageProgress).accessibilityLabel("현재 단계 진행률")
                         HStack {

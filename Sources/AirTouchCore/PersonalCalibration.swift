@@ -73,6 +73,7 @@ public struct PersonalCalibrationSnapshot: Sendable {
     public let observation: PersonalCalibrationObservation
     public let retryReason: PersonalCalibrationFailure?
     public let retryCount: Int
+    public let pinchHoldProgress: Double
 }
 
 /// Camera-driven calibration: 4 s at rest, 7 s horizontally, 7 s vertically,
@@ -112,6 +113,10 @@ public struct PersonalCalibrationSession {
     private var openAnchor = Point.zero
     private var openRatio = 0.0
     private var pinchCount = 0
+    private var pendingOpenRatios: [Double] = []
+    private var pendingClosedRatios: [Double] = []
+    private var pendingPinchShift = 0.0
+    private let pinchGapTolerance = 0.15
 
     public init() {}
 
@@ -150,7 +155,9 @@ public struct PersonalCalibrationSession {
             stageProgress: stage == .completed ? 1 : local,
             progress: min(1, (offset + local) / 4), acceptedSamples: acceptedSamples,
             rejectedSamples: rejectedSamples, pinchCount: pinchCount, failure: failure,
-            observation: observation, retryReason: retryReason, retryCount: retryCount)
+            observation: observation, retryReason: retryReason, retryCount: retryCount,
+            pinchHoldProgress: stage == .pinch
+                ? (pinchPhase == .done ? 1 : min(1, min(Double(plateau.count) / 5, plateauSeconds / 0.15))) : 0)
     }
 
     /// `confidenceQualified` must reflect reliable palm/index landmarks and,
@@ -163,13 +170,20 @@ public struct PersonalCalibrationSession {
         guard stage.isCollecting else { return }
         guard time.isFinite, now.isFinite, time >= stageStartedAt, time <= now, now - time < 0.20,
               lastCapture.map({ time > $0 }) ?? true else {
-            reject(.staleFrame, "최신 카메라 영상을 기다리고 있습니다")
+            reject(.staleFrame, "최신 카메라 영상을 기다리고 있습니다", preservePinch: true)
             return
         }
         let cameraInterval = lastCapture.flatMap { $0 >= stageStartedAt ? time - $0 : nil } ?? 0
+        // Compare capture timestamps, not delivery time, so camera latency does
+        // not shorten the brief occlusion allowance. Missing callbacks never
+        // refresh the last accepted capture or advance a pinch phase.
+        if stage == .pinch, let lastAcceptedCapture, time - lastAcceptedCapture > pinchGapTolerance {
+            restartUnfinishedPinch()
+            self.lastAcceptedCapture = nil
+        }
         lastCapture = time; lastFreshFrameAt = now
         guard let hand else {
-            reject(.searchingHand, "손을 카메라에 보여주세요. 손목과 검지가 화면 안에 들어오게 해주세요")
+            reject(.searchingHand, "손을 카메라에 보여주세요. 손목과 검지가 화면 안에 들어오게 해주세요", preservePinch: true)
             return
         }
         guard hand.isValid,
@@ -182,11 +196,11 @@ public struct PersonalCalibrationSession {
         // A folded thumb may be hidden while the palm and extended index remain
         // reliable. Require it only when its separation is actually measured.
         if stage == .pinch && !hand.isPinchReliable {
-            reject(.showThumb, "집는 간격을 확인할 수 있도록 엄지와 검지를 보여주세요")
+            reject(.showThumb, "집는 간격을 확인할 수 있도록 엄지와 검지를 보여주세요", preservePinch: true)
             return
         }
         guard confidenceQualified else {
-            reject(.adjustHand, "손바닥과 검지가 선명하게 보이도록 위치와 조명을 조정해주세요")
+            reject(.adjustHand, "손바닥과 검지가 선명하게 보이도록 위치와 조명을 조정해주세요", preservePinch: true)
             return
         }
         guard !hand.isOpenPalm, !hand.isScroll else {
@@ -197,20 +211,16 @@ public struct PersonalCalibrationSession {
             reject(.pointIndex, "검지만 펴고 엄지와 간격을 두세요")
             return
         }
-        let interval = lastAcceptedCapture.map { time - $0 } ?? 0
-        let dt = interval > 0 && interval <= 0.15 ? interval : 0
-        if dt == 0 { clearPlateau() }
         if attemptStartedAt == nil { attemptStartedAt = now }
         lastAcceptedCapture = time
-        // Movement measurements use each valid frame's bounded observation
-        // contribution, so an intervening invalid frame does not erase it.
+        // Every stage earns time only from fresh, qualified observations.
+        // Missing intervals are never bridged by the pinch grace period.
         // The 30 Hz cap deliberately makes lower frame rates take longer.
-        // Pinch timing still requires uninterrupted valid observations.
-        let movementTime = cameraInterval > 0 && cameraInterval <= 0.15
+        let observationTime = cameraInterval > 0 && cameraInterval <= 0.15
             ? min(cameraInterval, 1.0 / 30) : 0
-        stageSeconds += stage == .pinch ? dt : movementTime
+        stageSeconds += observationTime
         acceptedSamples += 1; stageSamples.append(hand); feedback = nil; observation = .collecting
-        if stage == .pinch { updatePinch(hand, dt: dt) }
+        if stage == .pinch { updatePinch(hand, dt: observationTime) }
         guard stageSeconds >= requiredSeconds else { return }
         switch stage {
         case .steady: finishSteady(at: now)
@@ -282,6 +292,7 @@ public struct PersonalCalibrationSession {
             pinchPhase = .opening; pinchCount = 0
             openRatios.removeAll(keepingCapacity: true); closedRatios.removeAll(keepingCapacity: true)
             pinchShifts.removeAll(keepingCapacity: true); openAnchor = .zero; openRatio = 0
+            clearPendingPinch()
         }
     }
 
@@ -290,12 +301,32 @@ public struct PersonalCalibrationSession {
         completedSamples += stageSamples.count
     }
 
-    private mutating func reject(_ state: PersonalCalibrationObservation, _ message: String) {
-        rejectedSamples += 1; feedback = message; observation = state
-        lastAcceptedCapture = nil; clearPlateau()
+    private mutating func reject(_ state: PersonalCalibrationObservation, _ message: String,
+                                 preservePinch: Bool = false) {
+        rejectedSamples += 1; observation = state
+        // Keep the requested open/close/release instruction visible during a
+        // brief dropout; the separate observation label explains the pause.
+        feedback = stage == .pinch && preservePinch && lastAcceptedCapture != nil ? nil : message
+        if stage != .pinch || !preservePinch {
+            lastAcceptedCapture = nil
+            if stage == .pinch { restartUnfinishedPinch() }
+            else { clearPlateau() }
+        }
     }
 
     private mutating func clearPlateau() { plateau.removeAll(keepingCapacity: true); plateauSeconds = 0 }
+
+    private mutating func clearPendingPinch() {
+        pendingOpenRatios.removeAll(keepingCapacity: true)
+        pendingClosedRatios.removeAll(keepingCapacity: true)
+        pendingPinchShift = 0
+    }
+
+    private mutating func restartUnfinishedPinch() {
+        clearPlateau(); clearPendingPinch()
+        guard pinchPhase != .done else { return }
+        pinchPhase = .opening; openAnchor = .zero; openRatio = 0
+    }
 
     private mutating func finishSteady(at time: Double) {
         guard stageSamples.count >= 60 else { retry(.insufficientSamples, at: time); return }
@@ -329,6 +360,10 @@ public struct PersonalCalibrationSession {
 
     private mutating func updatePinch(_ hand: HandFeatures, dt: Double) {
         guard pinchPhase != .done else { return }
+        if pinchPhase != .opening && (hand.palm - openAnchor).length >= 0.04 {
+            restartUnfinishedPinch()
+        }
+        if let first = plateau.first, (hand.palm - first.palm).length >= 0.04 { clearPlateau() }
         let qualifies: Bool
         switch pinchPhase {
         case .opening: qualifies = hand.pinchRatio >= 0.5
@@ -349,13 +384,17 @@ public struct PersonalCalibrationSession {
         switch pinchPhase {
         case .opening:
             openRatio = quantile(ratios, 0.5); openAnchor = center(plateau.map(\.palm))
-            openRatios += ratios; pinchPhase = .closing
+            pendingOpenRatios = ratios; pinchPhase = .closing
         case .closing:
-            closedRatios += ratios
-            pinchShifts.append((center(plateau.map(\.palm)) - openAnchor).length)
+            pendingClosedRatios = ratios
+            pendingPinchShift = (center(plateau.map(\.palm)) - openAnchor).length
             pinchPhase = .releasing
         case .releasing:
-            openRatios += ratios; pinchCount += 1
+            // Do not learn from a contact unless its release was observed too.
+            openRatios += pendingOpenRatios + ratios
+            closedRatios += pendingClosedRatios
+            pinchShifts.append(pendingPinchShift)
+            clearPendingPinch(); pinchCount += 1
             if pinchCount == 3 { pinchPhase = .done }
             else {
                 // This confirmed release is the next cycle's open baseline.
@@ -393,6 +432,7 @@ public struct PersonalCalibrationSession {
 
     private mutating func discardSamples() {
         stageSamples.removeAll(); plateau.removeAll(); openRatios.removeAll(); closedRatios.removeAll()
+        clearPendingPinch()
         pinchShifts.removeAll(); neutral = .zero; openAnchor = .zero
         lastAcceptedCapture = nil; lastCapture = nil
     }
