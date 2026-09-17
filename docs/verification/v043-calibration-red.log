@@ -1,0 +1,17 @@
+[0/1] Planning build
+Test Suite 'Selected tests' started at 2026-09-18 00:05:23.650.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-18 00:05:23.651.
+Test Suite 'CalibrationCameraInputTests' started at 2026-09-18 00:05:23.651.
+Test Case '-[AirTouchCoreTests.CalibrationCameraInputTests testSteadyStageAcceptsReliablePointerWhenFoldedThumbIsOccluded]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/CalibrationCameraInputTests.swift:42: error: -[AirTouchCoreTests.CalibrationCameraInputTests testSteadyStageAcceptsReliablePointerWhenFoldedThumbIsOccluded] : XCTAssertEqual failed: ("steady") is not equal to ("horizontal") - Reliable palm/index must advance movement calibration; accepted=0, rejected=150, instruction=손 전체와 엄지·검지가 보이도록 해주세요
+Test Case '-[AirTouchCoreTests.CalibrationCameraInputTests testSteadyStageAcceptsReliablePointerWhenFoldedThumbIsOccluded]' failed (0.023 seconds).
+Test Suite 'CalibrationCameraInputTests' failed at 2026-09-18 00:05:23.674.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.023 (0.023) seconds
+Test Suite 'AirTouchPackageTests.xctest' failed at 2026-09-18 00:05:23.674.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.023 (0.023) seconds
+Test Suite 'Selected tests' failed at 2026-09-18 00:05:23.674.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.023 (0.024) seconds
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
