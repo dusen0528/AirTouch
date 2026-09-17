@@ -1,0 +1,158 @@
+{
+  "cameraStopped" : true,
+  "completedCycles" : 10,
+  "cycles" : [
+    {
+      "captureDrops" : {
+
+      },
+      "cycle" : 1,
+      "elapsedSeconds" : 2.677350457999637,
+      "freshFrames" : 3,
+      "generation" : 1,
+      "height" : 720,
+      "pixelFormat" : 875704438,
+      "rejectedFrames" : 2,
+      "succeeded" : true,
+      "width" : 1280
+    },
+    {
+      "captureDrops" : {
+
+      },
+      "cycle" : 2,
+      "elapsedSeconds" : 1.0384070420004718,
+      "freshFrames" : 3,
+      "generation" : 2,
+      "height" : 720,
+      "pixelFormat" : 875704438,
+      "rejectedFrames" : 1,
+      "succeeded" : true,
+      "width" : 1280
+    },
+    {
+      "captureDrops" : {
+
+      },
+      "cycle" : 3,
+      "elapsedSeconds" : 1.0155398329998206,
+      "freshFrames" : 3,
+      "generation" : 3,
+      "height" : 720,
+      "pixelFormat" : 875704438,
+      "rejectedFrames" : 1,
+      "succeeded" : true,
+      "width" : 1280
+    },
+    {
+      "captureDrops" : {
+
+      },
+      "cycle" : 4,
+      "elapsedSeconds" : 1.036221458,
+      "freshFrames" : 3,
+      "generation" : 4,
+      "height" : 720,
+      "pixelFormat" : 875704438,
+      "rejectedFrames" : 1,
+      "succeeded" : true,
+      "width" : 1280
+    },
+    {
+      "captureDrops" : {
+
+      },
+      "cycle" : 5,
+      "elapsedSeconds" : 1.0132536660003097,
+      "freshFrames" : 3,
+      "generation" : 5,
+      "height" : 720,
+      "pixelFormat" : 875704438,
+      "rejectedFrames" : 1,
+      "succeeded" : true,
+      "width" : 1280
+    },
+    {
+      "captureDrops" : {
+
+      },
+      "cycle" : 6,
+      "elapsedSeconds" : 1.0574240419991838,
+      "freshFrames" : 3,
+      "generation" : 6,
+      "height" : 720,
+      "pixelFormat" : 875704438,
+      "rejectedFrames" : 1,
+      "succeeded" : true,
+      "width" : 1280
+    },
+    {
+      "captureDrops" : {
+
+      },
+      "cycle" : 7,
+      "elapsedSeconds" : 1.0221484579997195,
+      "freshFrames" : 3,
+      "generation" : 7,
+      "height" : 720,
+      "pixelFormat" : 875704438,
+      "rejectedFrames" : 1,
+      "succeeded" : true,
+      "width" : 1280
+    },
+    {
+      "captureDrops" : {
+
+      },
+      "cycle" : 8,
+      "elapsedSeconds" : 1.0556147919996874,
+      "freshFrames" : 3,
+      "generation" : 8,
+      "height" : 720,
+      "pixelFormat" : 875704438,
+      "rejectedFrames" : 1,
+      "succeeded" : true,
+      "width" : 1280
+    },
+    {
+      "captureDrops" : {
+
+      },
+      "cycle" : 9,
+      "elapsedSeconds" : 1.0839969579992612,
+      "freshFrames" : 3,
+      "generation" : 9,
+      "height" : 720,
+      "pixelFormat" : 875704438,
+      "rejectedFrames" : 1,
+      "succeeded" : true,
+      "width" : 1280
+    },
+    {
+      "captureDrops" : {
+
+      },
+      "cycle" : 10,
+      "elapsedSeconds" : 1.0118063749996509,
+      "freshFrames" : 3,
+      "generation" : 10,
+      "height" : 720,
+      "pixelFormat" : 875704438,
+      "rejectedFrames" : 1,
+      "succeeded" : true,
+      "width" : 1280
+    }
+  ],
+  "elapsedSeconds" : 12.012157334000221,
+  "handCoordinatesStored" : false,
+  "imagesStored" : false,
+  "maximumFrameAgeMilliseconds" : 200,
+  "osInputEnabled" : false,
+  "requestedCycles" : 10,
+  "requiredFreshFramesPerCycle" : 3,
+  "schema" : "airtouch.camera-preview-stress.v1",
+  "status" : "passed",
+  "success" : true,
+  "timeoutSecondsPerCycle" : 20,
+  "visibleWindowsCreated" : false
+}

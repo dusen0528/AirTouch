@@ -1,0 +1,48 @@
+[0/1] Planning build
+Building for debugging...
+[0/6] Write sources
+[1/6] Write swift-version--58304C5D6DBC2206.txt
+[3/13] Emitting module AirTouchCoreTests
+[4/13] Compiling AirTouchCoreTests CalibrationRecoveryTests.swift
+[5/13] Compiling AirTouchAppTests SystemTrackingControllerTests.swift
+[6/13] Compiling AirTouchAppTests CalibrationProfileStoreTests.swift
+[7/13] Compiling AirTouchAppTests CameraPreviewLifecycleTests.swift
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchAppTests/CameraPreviewLifecycleTests.swift:75:48: warning: main actor-isolated property 'subviews' can not be referenced from a nonisolated autoclosure
+73 |             window.displayIfNeeded()
+74 |             func preview(in view: NSView) -> PreviewHost? {
+75 |                 (view as? PreviewHost) ?? view.subviews.lazy.compactMap { preview(in: $0) }.first
+   |                                                `- warning: main actor-isolated property 'subviews' can not be referenced from a nonisolated autoclosure
+76 |             }
+77 |             let host = try XCTUnwrap(preview(in: hosting))
+
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSView.h:88:46: note: property declared here
+ 86 | @property (nullable, readonly, unsafe_unretained) NSWindow *window;
+ 87 | @property (nullable, readonly, unsafe_unretained) NSView *superview;
+ 88 | @property (copy) NSArray<__kindof NSView *> *subviews;
+    |                                              `- note: property declared here
+ 89 | - (BOOL)isDescendantOf:(NSView *)view;
+ 90 | - (nullable NSView *)ancestorSharedWithView:(NSView *)view;
+[8/13] Compiling AirTouchAppTests CursorStatusOverlayTests.swift
+[9/13] Emitting module AirTouchAppTests
+[10/13] Compiling AirTouchAppTests CalibrationViewRenderingTests.swift
+[11/13] Compiling AirTouchAppTests AppWindowsTests.swift
+[11/13] Write Objects.LinkFileList
+[12/13] Linking AirTouchPackageTests
+Build complete! (1.94s)
+Test Suite 'Selected tests' started at 2026-09-18 00:30:34.808.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-18 00:30:34.809.
+Test Suite 'CalibrationRecoveryTests' started at 2026-09-18 00:30:34.809.
+Test Case '-[AirTouchCoreTests.CalibrationRecoveryTests testHalfValidCameraFramesAccumulateOnlyTheirObservedTime]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/CalibrationRecoveryTests.swift:123: error: -[AirTouchCoreTests.CalibrationRecoveryTests testHalfValidCameraFramesAccumulateOnlyTheirObservedTime] : XCTAssertGreaterThan failed: ("0.0") is not greater than ("0.45")
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/CalibrationRecoveryTests.swift:128: error: -[AirTouchCoreTests.CalibrationRecoveryTests testHalfValidCameraFramesAccumulateOnlyTheirObservedTime] : XCTAssertEqual failed: ("steady") is not equal to ("horizontal")
+Test Case '-[AirTouchCoreTests.CalibrationRecoveryTests testHalfValidCameraFramesAccumulateOnlyTheirObservedTime]' failed (0.146 seconds).
+Test Suite 'CalibrationRecoveryTests' failed at 2026-09-18 00:30:34.955.
+	 Executed 1 test, with 2 failures (0 unexpected) in 0.146 (0.146) seconds
+Test Suite 'AirTouchPackageTests.xctest' failed at 2026-09-18 00:30:34.955.
+	 Executed 1 test, with 2 failures (0 unexpected) in 0.146 (0.146) seconds
+Test Suite 'Selected tests' failed at 2026-09-18 00:30:34.955.
+	 Executed 1 test, with 2 failures (0 unexpected) in 0.146 (0.147) seconds
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

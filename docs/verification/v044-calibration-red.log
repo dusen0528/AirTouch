@@ -1,0 +1,35 @@
+[0/1] Planning build
+Building for debugging...
+[0/6] Write sources
+[1/6] Write swift-version--58304C5D6DBC2206.txt
+[3/6] Compiling AirTouchCoreTests CalibrationRecoveryTests.swift
+[4/6] Emitting module AirTouchCoreTests
+[4/6] Write Objects.LinkFileList
+[5/6] Linking AirTouchPackageTests
+Build complete! (2.99s)
+Test Suite 'Selected tests' started at 2026-09-18 00:20:58.838.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-18 00:20:58.843.
+Test Suite 'CalibrationRecoveryTests' started at 2026-09-18 00:20:58.843.
+Test Case '-[AirTouchCoreTests.CalibrationRecoveryTests testCameraStartupDelayDoesNotDiscardCalibrationBeforeAnySamples]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/CalibrationRecoveryTests.swift:34: error: -[AirTouchCoreTests.CalibrationRecoveryTests testCameraStartupDelayDoesNotDiscardCalibrationBeforeAnySamples] : XCTAssertEqual failed: ("failed") is not equal to ("steady") - Camera readiness is not a failed hand measurement
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/CalibrationRecoveryTests.swift:35: error: -[AirTouchCoreTests.CalibrationRecoveryTests testCameraStartupDelayDoesNotDiscardCalibrationBeforeAnySamples] : XCTAssertNil failed: "insufficientSamples"
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/CalibrationRecoveryTests.swift:39: error: -[AirTouchCoreTests.CalibrationRecoveryTests testCameraStartupDelayDoesNotDiscardCalibrationBeforeAnySamples] : XCTAssertEqual failed: ("failed") is not equal to ("horizontal")
+Test Case '-[AirTouchCoreTests.CalibrationRecoveryTests testCameraStartupDelayDoesNotDiscardCalibrationBeforeAnySamples]' failed (0.352 seconds).
+Test Case '-[AirTouchCoreTests.CalibrationRecoveryTests testMovingDuringSteadyStageCanSettleWithoutRestartingWholeSession]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/CalibrationRecoveryTests.swift:47: error: -[AirTouchCoreTests.CalibrationRecoveryTests testMovingDuringSteadyStageCanSettleWithoutRestartingWholeSession] : XCTAssertEqual failed: ("failed") is not equal to ("steady") - Poor samples should retry only the current stage
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/CalibrationRecoveryTests.swift:50: error: -[AirTouchCoreTests.CalibrationRecoveryTests testMovingDuringSteadyStageCanSettleWithoutRestartingWholeSession] : XCTAssertEqual failed: ("failed") is not equal to ("horizontal")
+Test Case '-[AirTouchCoreTests.CalibrationRecoveryTests testMovingDuringSteadyStageCanSettleWithoutRestartingWholeSession]' failed (0.002 seconds).
+Test Case '-[AirTouchCoreTests.CalibrationRecoveryTests testNarrowHorizontalRangeRetriesWithoutLosingCompletedSteadyStage]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/CalibrationRecoveryTests.swift:58: error: -[AirTouchCoreTests.CalibrationRecoveryTests testNarrowHorizontalRangeRetriesWithoutLosingCompletedSteadyStage] : XCTAssertEqual failed: ("failed") is not equal to ("horizontal") - Range retry must retain the completed steady stage
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/CalibrationRecoveryTests.swift:62: error: -[AirTouchCoreTests.CalibrationRecoveryTests testNarrowHorizontalRangeRetriesWithoutLosingCompletedSteadyStage] : XCTAssertEqual failed: ("failed") is not equal to ("vertical")
+Test Case '-[AirTouchCoreTests.CalibrationRecoveryTests testNarrowHorizontalRangeRetriesWithoutLosingCompletedSteadyStage]' failed (0.002 seconds).
+Test Suite 'CalibrationRecoveryTests' failed at 2026-09-18 00:20:59.200.
+	 Executed 3 tests, with 7 failures (0 unexpected) in 0.356 (0.357) seconds
+Test Suite 'AirTouchPackageTests.xctest' failed at 2026-09-18 00:20:59.200.
+	 Executed 3 tests, with 7 failures (0 unexpected) in 0.356 (0.358) seconds
+Test Suite 'Selected tests' failed at 2026-09-18 00:20:59.201.
+	 Executed 3 tests, with 7 failures (0 unexpected) in 0.356 (0.363) seconds
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

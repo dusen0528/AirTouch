@@ -1,0 +1,54 @@
+[0/1] Planning build
+Building for debugging...
+[0/7] Write sources
+[2/7] Write swift-version--58304C5D6DBC2206.txt
+[4/11] Compiling AirTouchApp CameraService.swift
+[5/11] Compiling AirTouchApp CameraPreview.swift
+[6/11] Emitting module AirTouchApp
+[7/11] Compiling AirTouchApp ContentView.swift
+[8/16] Compiling AirTouchApp AirTouchApp.swift
+[9/16] Compiling AirTouchApp AppWindows.swift
+[10/16] Compiling AirTouchApp SetupView.swift
+[11/16] Compiling AirTouchApp AppModel.swift
+[12/16] Compiling AirTouchApp CalibrationView.swift
+[12/17] Write Objects.LinkFileList
+[13/17] Linking AirTouch
+[14/17] Applying AirTouch
+[16/21] Emitting module AirTouchAppTests
+[17/21] Compiling AirTouchAppTests CalibrationViewRenderingTests.swift
+[18/21] Compiling AirTouchAppTests AppWindowsTests.swift
+[19/21] Compiling AirTouchAppTests CameraPreviewLifecycleTests.swift
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchAppTests/CameraPreviewLifecycleTests.swift:31:48: warning: main actor-isolated property 'subviews' can not be referenced from a nonisolated autoclosure
+29 |             window.displayIfNeeded()
+30 |             func preview(in view: NSView) -> PreviewHost? {
+31 |                 (view as? PreviewHost) ?? view.subviews.lazy.compactMap { preview(in: $0) }.first
+   |                                                `- warning: main actor-isolated property 'subviews' can not be referenced from a nonisolated autoclosure
+32 |             }
+33 |             let host = try XCTUnwrap(preview(in: hosting))
+
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSView.h:88:46: note: property declared here
+ 86 | @property (nullable, readonly, unsafe_unretained) NSWindow *window;
+ 87 | @property (nullable, readonly, unsafe_unretained) NSView *superview;
+ 88 | @property (copy) NSArray<__kindof NSView *> *subviews;
+    |                                              `- note: property declared here
+ 89 | - (BOOL)isDescendantOf:(NSView *)view;
+ 90 | - (nullable NSView *)ancestorSharedWithView:(NSView *)view;
+[19/21] Write Objects.LinkFileList
+[20/21] Linking AirTouchPackageTests
+Build complete! (6.48s)
+Test Suite 'Selected tests' started at 2026-09-18 00:22:17.408.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-18 00:22:17.410.
+Test Suite 'CameraPreviewLifecycleTests' started at 2026-09-18 00:22:17.410.
+Test Case '-[AirTouchAppTests.CameraPreviewLifecycleTests testPreviewAttachmentWaitsForInFlightSessionWork]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchAppTests/CameraPreviewLifecycleTests.swift:35: error: -[AirTouchAppTests.CameraPreviewLifecycleTests testPreviewAttachmentWaitsForInFlightSessionWork] : XCTAssertNil failed: "<AVCaptureSession: 0x85f9e85c0 [AVCaptureSessionPresetHigh]>" - Preview must not mutate the session graph while capture start/stop work owns its queue
+Test Case '-[AirTouchAppTests.CameraPreviewLifecycleTests testPreviewAttachmentWaitsForInFlightSessionWork]' failed (0.325 seconds).
+Test Suite 'CameraPreviewLifecycleTests' failed at 2026-09-18 00:22:17.736.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.325 (0.326) seconds
+Test Suite 'AirTouchPackageTests.xctest' failed at 2026-09-18 00:22:17.736.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.325 (0.326) seconds
+Test Suite 'Selected tests' failed at 2026-09-18 00:22:17.736.
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.325 (0.328) seconds
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

@@ -1,0 +1,136 @@
+{
+  "appVersion": "0.4.3",
+  "build": "13",
+  "capturedAt": "2026-09-18 00:18:17.7835 +0900",
+  "exception": {
+    "type": "EXC_CRASH",
+    "signal": "SIGABRT"
+  },
+  "threads": [
+    {
+      "queue": "com.apple.main-thread",
+      "triggered": false,
+      "frames": [
+        {
+          "symbol": "__ulock_wait2"
+        },
+        {
+          "symbol": "_os_unfair_lock_lock_slow"
+        },
+        {
+          "symbol": "objc_sync_enter"
+        },
+        {
+          "symbol": "-[AVCaptureSession_Tundra _doSessionUpdates]"
+        },
+        {
+          "symbol": "-[AVCaptureSession_Tundra commitConfiguration]"
+        },
+        {
+          "symbol": "-[AVCaptureSession_Tundra addVideoPreviewLayer:]"
+        },
+        {
+          "symbol": "CameraPreview.makeNSView(context:)",
+          "sourceFile": "CameraPreview.swift",
+          "sourceLine": 25
+        },
+        {
+          "symbol": "PlatformViewRepresentableAdaptor.makeViewProvider(context:)"
+        },
+        {
+          "symbol": "protocol witness for CoreViewRepresentable.makeViewProvider(context:) in conformance PlatformViewRepresentableAdaptor<A>"
+        },
+        {
+          "symbol": "closure #1 in closure #2 in closure #1 in closure #6 in closure #1 in PlatformViewChild.updateValue()"
+        },
+        {
+          "symbol": "closure #2 in closure #1 in closure #6 in closure #1 in PlatformViewChild.updateValue()"
+        },
+        {
+          "symbol": "partial apply for closure #2 in closure #1 in closure #6 in closure #1 in PlatformViewChild.updateValue()"
+        },
+        {
+          "symbol": "RepresentableContextValues.asCurrent<A>(do:)"
+        },
+        {
+          "symbol": "closure #1 in closure #6 in closure #1 in PlatformViewChild.updateValue()"
+        },
+        {
+          "symbol": "partial apply for closure #6 in closure #1 in PlatformViewChild.updateValue()"
+        },
+        {
+          "symbol": "closure #1 in ObservationCenter._withObservation<A>(do:)"
+        },
+        {
+          "symbol": "partial apply for closure #1 in ObservationCenter._withObservation<A>(do:)"
+        },
+        {
+          "symbol": "withUnsafeMutablePointer<A, B, C>(to:_:)"
+        }
+      ]
+    },
+    {
+      "queue": "airtouch.capture-session",
+      "triggered": true,
+      "frames": [
+        {
+          "symbol": "__pthread_kill"
+        },
+        {
+          "symbol": "pthread_kill"
+        },
+        {
+          "symbol": "abort"
+        },
+        {
+          "symbol": "__abort_message"
+        },
+        {
+          "symbol": "demangling_terminate_handler()"
+        },
+        {
+          "symbol": "_objc_terminate()"
+        },
+        {
+          "symbol": "std::__terminate(void (*)())"
+        },
+        {
+          "symbol": "__cxxabiv1::failed_throw(__cxxabiv1::__cxa_exception*)"
+        },
+        {
+          "symbol": "__cxa_throw"
+        },
+        {
+          "symbol": "objc_exception_throw"
+        },
+        {
+          "symbol": "__NSFastEnumerationMutationHandler"
+        },
+        {
+          "symbol": "-[AVCaptureSession_Tundra _setRunning:]"
+        },
+        {
+          "symbol": "-[AVCaptureSession_Tundra startRunning]"
+        },
+        {
+          "symbol": "closure #1 in CameraService.start(generation:)",
+          "sourceFile": "CameraService.swift",
+          "sourceLine": 77
+        },
+        {
+          "symbol": "thunk for @escaping @callee_guaranteed @Sendable () -> ()"
+        },
+        {
+          "symbol": "_dispatch_call_block_and_release"
+        },
+        {
+          "symbol": "_dispatch_client_callout"
+        },
+        {
+          "symbol": "_dispatch_lane_serial_drain"
+        }
+      ]
+    }
+  ],
+  "note": "Crash stack summary only. Raw crash report, device identifiers, camera frames and hand landmarks are excluded."
+}
