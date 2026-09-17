@@ -59,7 +59,7 @@ struct SetupView: View {
                         .buttonStyle(.borderedProminent).disabled(!model.canStartSystem)
                 }
             } footer: {
-                Text("완료 후 도구 막대의 ‘제어 시작’을 누르면 카메라가 켜집니다.")
+                Text("완료 후 메뉴 막대의 AirTouch에서 ‘전체 제어 시작’을 누르세요. 창을 닫아도 메뉴 막대에서 사용할 수 있습니다.")
             }
         }
         .formStyle(.grouped)
@@ -76,13 +76,13 @@ struct SetupView: View {
 
 struct AirTouchSettings: View {
     @ObservedObject var model: AppModel
-    @Environment(\.openWindow) private var openWindow
+    var showMainWindow: () -> Void = {}
     var body: some View {
         TabView {
             Form {
                 Section("내 손에 맞추기") {
                     LabeledContent("개인 보정", value: model.calibrationProfile == nil ? "아직 보정하지 않음" : "적용 중")
-                    Button("손 보정 열기…") { openWindow(id: "practice"); model.openCalibration() }
+                    Button("손 보정 열기…") { model.openCalibration(); showMainWindow() }
                     if model.calibrationProfile != nil {
                         Button("보정 초기화") { model.resetCalibration() }.disabled(model.isRunning)
                     }
@@ -119,9 +119,9 @@ struct AirTouchSettings: View {
                     LabeledContent("카메라", value: model.permissions.camera == .authorized ? "허용됨" : "허용 필요")
                     LabeledContent("손쉬운 사용", value: model.permissions.ready ? "허용됨" : "확인 필요")
                     Button("사용 준비 열기…") {
-                        model.stop(); openWindow(id: "practice")
+                        model.stop()
                         model.showSetup = true
-                        NSApp.activate(ignoringOtherApps: true)
+                        showMainWindow()
                     }
                 }
                 Section("중지") {

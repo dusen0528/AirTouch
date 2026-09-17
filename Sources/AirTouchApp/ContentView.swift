@@ -30,6 +30,7 @@ enum AppDestination: String, CaseIterable, Identifiable {
 
 struct ContentView: View {
     @ObservedObject var model: AppModel
+    var openSettings: () -> Void = {}
 
     var body: some View {
         NavigationSplitView {
@@ -78,7 +79,7 @@ struct ContentView: View {
                     .help(model.isRunning ? "카메라와 입력을 중지합니다" : "카메라를 켜고 손동작 인식을 시작합니다")
                 }
                 ToolbarItem {
-                    SettingsLink { Label("설정", systemImage: "gearshape") }
+                    Button(action: openSettings) { Label("설정", systemImage: "gearshape") }
                 }
             }
             .safeAreaInset(edge: .bottom, spacing: 0) {

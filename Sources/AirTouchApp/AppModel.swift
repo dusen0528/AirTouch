@@ -290,11 +290,8 @@ enum ControlMode: String { case practice, system }
         if let flag = args.firstIndex(of: "--camera-benchmark-report"), flag + 1 < args.count {
             reportURL = URL(fileURLWithPath: args[flag + 1])
         }
-        // A menu-bar app can launch without restoring its window. Diagnostic
-        // playback must not depend on ContentView.onAppear being called.
-        if args.contains("--demo") || isCameraBenchmark {
-            DispatchQueue.main.async { [weak self] in self?.handleLaunchArguments() }
-        }
+        // The application delegate handles all launch modes once, including
+        // diagnostics, without depending on a control window being visible.
     }
 
     private static var now: Double { CMClockGetTime(CMClockGetHostTimeClock()).seconds }
