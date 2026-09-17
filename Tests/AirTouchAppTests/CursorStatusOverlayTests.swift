@@ -35,8 +35,22 @@ final class CursorStatusOverlayTests: XCTestCase {
             XCTAssertEqual(CursorStatusOverlay.status(engine: s.engine, handoff: true,
                 trackingFresh: false).text, "마우스 사용 중")
             _ = s.engine.stop()
-            XCTAssertEqual(CursorStatusOverlay.status(engine: s.engine, handoff: false,
-                trackingFresh: true).text, "손가락을 펴서 준비")
+            let ready = CursorStatusOverlay.status(engine: s.engine, handoff: false, trackingFresh: true)
+            XCTAssertEqual(ready.text, "손동작 안내")
+            XCTAssertNotNil(ready.instructions)
+            if let directory = ProcessInfo.processInfo.environment["AIRTOUCH_RENDER_DIRECTORY"] {
+                let overlay = CursorStatusOverlay()
+                let url = URL(fileURLWithPath: directory, isDirectory: true)
+                try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+                for locked in [true, false] {
+                    s.engine.configuration.dragLockEnabled = locked
+                    let status = CursorStatusOverlay.status(engine: s.engine, handoff: false, trackingFresh: true)
+                    let data = overlay.previewPNG(status: status)
+                    XCTAssertNotNil(data)
+                    try? data?.write(to: url.appendingPathComponent("airtouch-v042-guide-\(locked ? "locked" : "held").png"))
+                    XCTAssertFalse(overlay.panelSnapshot.isVisible)
+                }
+            }
         }
     }
 
