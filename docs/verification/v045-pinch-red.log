@@ -1,0 +1,33 @@
+[0/1] Planning build
+Building for debugging...
+[0/6] Write sources
+[1/6] Write swift-version--58304C5D6DBC2206.txt
+[3/6] Emitting module AirTouchCoreTests
+[4/6] Compiling AirTouchCoreTests PinchCalibrationContinuityTests.swift
+[4/6] Write Objects.LinkFileList
+[5/6] Linking AirTouchPackageTests
+Build complete! (2.40s)
+Test Suite 'Selected tests' started at 2026-09-18 00:46:29.321.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-18 00:46:29.323.
+Test Suite 'PinchCalibrationContinuityTests' started at 2026-09-18 00:46:29.323.
+Test Case '-[AirTouchCoreTests.PinchCalibrationContinuityTests testThreePinchesCompleteWithHalfMissingOccludedOrWeakFrames]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/PinchCalibrationContinuityTests.swift:48: error: -[AirTouchCoreTests.PinchCalibrationContinuityTests testThreePinchesCompleteWithHalfMissingOccludedOrWeakFrames] : XCTAssertEqual failed: ("0") is not equal to ("3") - Dropout: missingHand
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/PinchCalibrationContinuityTests.swift:49: error: -[AirTouchCoreTests.PinchCalibrationContinuityTests testThreePinchesCompleteWithHalfMissingOccludedOrWeakFrames] : XCTAssertEqual failed: ("pinch") is not equal to ("completed") - Dropout: missingHand
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/PinchCalibrationContinuityTests.swift:50: error: -[AirTouchCoreTests.PinchCalibrationContinuityTests testThreePinchesCompleteWithHalfMissingOccludedOrWeakFrames] : XCTAssertNotNil failed - Dropout: missingHand
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/PinchCalibrationContinuityTests.swift:48: error: -[AirTouchCoreTests.PinchCalibrationContinuityTests testThreePinchesCompleteWithHalfMissingOccludedOrWeakFrames] : XCTAssertEqual failed: ("0") is not equal to ("3") - Dropout: occludedThumb
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/PinchCalibrationContinuityTests.swift:49: error: -[AirTouchCoreTests.PinchCalibrationContinuityTests testThreePinchesCompleteWithHalfMissingOccludedOrWeakFrames] : XCTAssertEqual failed: ("pinch") is not equal to ("completed") - Dropout: occludedThumb
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/PinchCalibrationContinuityTests.swift:50: error: -[AirTouchCoreTests.PinchCalibrationContinuityTests testThreePinchesCompleteWithHalfMissingOccludedOrWeakFrames] : XCTAssertNotNil failed - Dropout: occludedThumb
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/PinchCalibrationContinuityTests.swift:48: error: -[AirTouchCoreTests.PinchCalibrationContinuityTests testThreePinchesCompleteWithHalfMissingOccludedOrWeakFrames] : XCTAssertEqual failed: ("0") is not equal to ("3") - Dropout: lowConfidence
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/PinchCalibrationContinuityTests.swift:49: error: -[AirTouchCoreTests.PinchCalibrationContinuityTests testThreePinchesCompleteWithHalfMissingOccludedOrWeakFrames] : XCTAssertEqual failed: ("pinch") is not equal to ("completed") - Dropout: lowConfidence
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchCoreTests/PinchCalibrationContinuityTests.swift:50: error: -[AirTouchCoreTests.PinchCalibrationContinuityTests testThreePinchesCompleteWithHalfMissingOccludedOrWeakFrames] : XCTAssertNotNil failed - Dropout: lowConfidence
+Test Case '-[AirTouchCoreTests.PinchCalibrationContinuityTests testThreePinchesCompleteWithHalfMissingOccludedOrWeakFrames]' failed (0.162 seconds).
+Test Suite 'PinchCalibrationContinuityTests' failed at 2026-09-18 00:46:29.485.
+	 Executed 1 test, with 9 failures (0 unexpected) in 0.162 (0.162) seconds
+Test Suite 'AirTouchPackageTests.xctest' failed at 2026-09-18 00:46:29.485.
+	 Executed 1 test, with 9 failures (0 unexpected) in 0.162 (0.162) seconds
+Test Suite 'Selected tests' failed at 2026-09-18 00:46:29.485.
+	 Executed 1 test, with 9 failures (0 unexpected) in 0.162 (0.164) seconds
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

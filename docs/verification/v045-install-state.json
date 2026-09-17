@@ -1,0 +1,30 @@
+{
+  "apps": [
+    {
+      "activationPolicy": 1,
+      "bundlePath": "/Users/inho/Applications/AirTouch.app",
+      "isActive": false,
+      "pid": 67239
+    }
+  ],
+  "windows": [
+    {
+      "bounds": {
+        "Height": 42,
+        "Width": 220,
+        "X": 0,
+        "Y": 1287
+      },
+      "layer": 3,
+      "onScreen": false
+    }
+  ],
+  "version": "0.4.5",
+  "build": "15",
+  "bundleID": "dev.airtouch.mac",
+  "menuBarApplication": true,
+  "signatureValid": true,
+  "sameDesignatedRequirement": true,
+  "temporaryAppExists": false,
+  "installationBackups": []
+}
