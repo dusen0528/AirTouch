@@ -142,7 +142,7 @@ struct CameraMonitor: View {
         ZStack {
             Color.black
             if model.isRunning && !model.isDemo {
-                CameraPreview(session: model.camera.session)
+                CameraPreview(camera: model.camera)
                 GeometryReader { geometry in
                     let width = min(geometry.size.width, geometry.size.height * model.cameraAspectRatio)
                     let height = width / model.cameraAspectRatio

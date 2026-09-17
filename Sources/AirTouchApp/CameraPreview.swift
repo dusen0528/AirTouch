@@ -4,6 +4,7 @@ import AirTouchCore
 
 final class PreviewHost: NSView {
     let preview = AVCaptureVideoPreviewLayer()
+    private weak var camera: CameraService?
     override init(frame: NSRect) {
         super.init(frame: frame)
         wantsLayer = true; layer = CALayer()
@@ -12,19 +13,26 @@ final class PreviewHost: NSView {
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override func layout() { super.layout(); preview.frame = bounds }
-    func mirror() {
-        if let connection = preview.connection, connection.isVideoMirroringSupported {
-            connection.automaticallyAdjustsVideoMirroring = false; connection.isVideoMirrored = true
-        }
+    func connect(to camera: CameraService) {
+        guard self.camera !== camera else { return }
+        disconnect()
+        self.camera = camera
+        camera.attachPreview(preview)
     }
+    func disconnect() {
+        camera?.detachPreview(preview)
+        camera = nil
+    }
+    deinit { camera?.detachPreview(preview) }
 }
 
 struct CameraPreview: NSViewRepresentable {
-    let session: AVCaptureSession
+    let camera: CameraService
     func makeNSView(context: Context) -> PreviewHost {
-        let view = PreviewHost(frame: .zero); view.preview.session = session; view.mirror(); return view
+        let view = PreviewHost(frame: .zero); view.connect(to: camera); return view
     }
-    func updateNSView(_ view: PreviewHost, context: Context) { view.mirror() }
+    func updateNSView(_ view: PreviewHost, context: Context) {}
+    static func dismantleNSView(_ view: PreviewHost, coordinator: ()) { view.disconnect() }
 }
 
 struct SkeletonOverlay: View {

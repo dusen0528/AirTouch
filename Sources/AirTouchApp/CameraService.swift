@@ -28,7 +28,7 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     let session = AVCaptureSession()
     var onResult: ((TrackingResult) -> Void)?
     var onStatus: ((Int, String, Bool) -> Void)?
-    private let sessionQueue = DispatchQueue(label: "airtouch.capture-session")
+    private let sessionQueue: DispatchQueue
     private let inferenceQueue = DispatchQueue(label: "airtouch.inference", qos: .userInitiated)
     private let handRequest = VNDetectHumanHandPoseRequest()
     private let output = AVCaptureVideoDataOutput()
@@ -45,18 +45,47 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
         ProcessInfo.processInfo.arguments.contains("--camera-480p") ? (640, 480) : (1280, 720)
     }
     private var observers: [NSObjectProtocol] = []
+    // Preview attachment also changes the capture graph. It must share the
+    // start/stop/configuration queue, including teardown and connection settings.
+    private var previewLayers: [ObjectIdentifier: AVCaptureVideoPreviewLayer] = [:]
 
-    override init() {
+    init(sessionQueue: DispatchQueue = DispatchQueue(label: "airtouch.capture-session")) {
+        self.sessionQueue = sessionQueue
         super.init()
         handRequest.maximumHandCount = 2
     }
 
     deinit {
         observers.forEach(NotificationCenter.default.removeObserver)
-        let session = session, device = lockedDevice
+        let session = session, device = lockedDevice, previews = Array(previewLayers.values)
         sessionQueue.async {
             session.stopRunning()
+            previews.forEach { $0.session = nil }
             device?.unlockForConfiguration()
+        }
+    }
+
+    func attachPreview(_ preview: AVCaptureVideoPreviewLayer) {
+        sessionQueue.async {
+            let id = ObjectIdentifier(preview)
+            guard self.previewLayers[id] == nil else { return }
+            self.previewLayers[id] = preview
+            preview.session = self.session
+            self.mirrorPreview(preview)
+        }
+    }
+
+    func detachPreview(_ preview: AVCaptureVideoPreviewLayer) {
+        sessionQueue.async {
+            guard self.previewLayers.removeValue(forKey: ObjectIdentifier(preview)) != nil else { return }
+            preview.session = nil
+        }
+    }
+
+    private func mirrorPreview(_ preview: AVCaptureVideoPreviewLayer) {
+        if let connection = preview.connection, connection.isVideoMirroringSupported {
+            connection.automaticallyAdjustsVideoMirroring = false
+            connection.isVideoMirrored = true
         }
     }
 
@@ -75,6 +104,7 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
                 else { try self.retainCaptureFormatLock() }
                 self.observeSession(generation: generation)
                 self.session.startRunning()
+                self.previewLayers.values.forEach(self.mirrorPreview)
                 if !self.session.isRunning { self.releaseCaptureFormatLock() }
                 self.updateConfigurationSnapshot()
                 self.onStatus?(generation, self.session.isRunning ? "카메라 연결됨" : "카메라를 시작하지 못했습니다", !self.session.isRunning)
@@ -85,13 +115,14 @@ final class CameraService: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
         }
     }
 
-    func stop() {
+    func stop(completion: (() -> Void)? = nil) {
         sessionQueue.async { [weak self] in
-            guard let self else { return }
+            guard let self else { completion?(); return }
             self.observers.forEach(NotificationCenter.default.removeObserver)
             self.observers.removeAll()
             self.session.stopRunning()
             self.releaseCaptureFormatLock()
+            completion?()
         }
     }
 

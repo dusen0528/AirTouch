@@ -25,6 +25,7 @@ import SwiftUI
     private var settingsRequested = false
     private var runningSubscription: AnyCancellable?
     private var launched = false
+    private var cameraPreviewStress: CameraPreviewStressRun?
 
     init(model: AppModel) {
         self.model = model
@@ -41,6 +42,15 @@ import SwiftUI
     func launch() {
         guard !launched else { return }
         launched = true
+        let args = ProcessInfo.processInfo.arguments
+        if let flag = args.firstIndex(of: "--camera-preview-stress-report"), flag + 1 < args.count {
+            let run = CameraPreviewStressRun(reportURL: URL(fileURLWithPath: args[flag + 1])) { _ in
+                NSApp.terminate(nil)
+            }
+            cameraPreviewStress = run
+            run.start()
+            return
+        }
         model.handleLaunchArguments()
         if model.showSetup { showMainWindow() }
     }
