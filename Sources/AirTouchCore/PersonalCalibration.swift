@@ -71,6 +71,8 @@ public struct PersonalCalibrationSnapshot: Sendable {
     public let pinchCount: Int
     public let failure: PersonalCalibrationFailure?
     public let observation: PersonalCalibrationObservation
+    public let retryReason: PersonalCalibrationFailure?
+    public let retryCount: Int
 }
 
 /// Camera-driven calibration: 4 s at rest, 7 s horizontally, 7 s vertically,
@@ -82,16 +84,20 @@ public struct PersonalCalibrationSession {
     public private(set) var failure: PersonalCalibrationFailure?
     private var createdAt = Date(timeIntervalSince1970: 0)
     private var stageStartedAt = 0.0
+    private var attemptStartedAt: Double?
     private var lastCapture: Double?
     private var lastFreshFrameAt: Double?
     private var lastAcceptedCapture: Double?
     private var stageSeconds = 0.0
     private var totalSeconds = 0.0
+    private var completedSamples = 0
     private var acceptedSamples = 0
     private var rejectedSamples = 0
     private var stageSamples: [HandFeatures] = []
     private var feedback: String?
     private var observation: PersonalCalibrationObservation = .waitingForCamera
+    private var retryReason: PersonalCalibrationFailure?
+    private var retryCount = 0
     private var neutral = Point.zero
     private var steadyNoise = 0.0
     private var horizontalRange = 0.0
@@ -144,7 +150,7 @@ public struct PersonalCalibrationSession {
             stageProgress: stage == .completed ? 1 : local,
             progress: min(1, (offset + local) / 4), acceptedSamples: acceptedSamples,
             rejectedSamples: rejectedSamples, pinchCount: pinchCount, failure: failure,
-            observation: observation)
+            observation: observation, retryReason: retryReason, retryCount: retryCount)
     }
 
     /// `confidenceQualified` must reflect reliable palm/index landmarks and,
@@ -160,6 +166,7 @@ public struct PersonalCalibrationSession {
             reject(.staleFrame, "최신 카메라 영상을 기다리고 있습니다")
             return
         }
+        let cameraInterval = lastCapture.flatMap { $0 >= stageStartedAt ? time - $0 : nil } ?? 0
         lastCapture = time; lastFreshFrameAt = now
         guard let hand else {
             reject(.searchingHand, "손을 카메라에 보여주세요. 손목과 검지가 화면 안에 들어오게 해주세요")
@@ -193,8 +200,15 @@ public struct PersonalCalibrationSession {
         let interval = lastAcceptedCapture.map { time - $0 } ?? 0
         let dt = interval > 0 && interval <= 0.15 ? interval : 0
         if dt == 0 { clearPlateau() }
+        if attemptStartedAt == nil { attemptStartedAt = now }
         lastAcceptedCapture = time
-        stageSeconds += dt; totalSeconds += dt
+        // Movement measurements use each valid frame's bounded observation
+        // contribution, so an intervening invalid frame does not erase it.
+        // The 30 Hz cap deliberately makes lower frame rates take longer.
+        // Pinch timing still requires uninterrupted valid observations.
+        let movementTime = cameraInterval > 0 && cameraInterval <= 0.15
+            ? min(cameraInterval, 1.0 / 30) : 0
+        stageSeconds += stage == .pinch ? dt : movementTime
         acceptedSamples += 1; stageSamples.append(hand); feedback = nil; observation = .collecting
         if stage == .pinch { updatePinch(hand, dt: dt) }
         guard stageSeconds >= requiredSeconds else { return }
@@ -203,19 +217,20 @@ public struct PersonalCalibrationSession {
         case .horizontal: finishRange(horizontal: true, at: now)
         case .vertical: finishRange(horizontal: false, at: now)
         case .pinch:
-            if pinchCount == 3 { finishProfile() }
+            if pinchCount == 3 { finishProfile(at: now) }
         default: break
         }
     }
 
-    /// Called by the UI timer too: elapsed wall time may fail a stage, but can
-    /// never complete one when no fresh, confidence-qualified frames arrived.
+    /// Camera preparation is separate from a measurement attempt. Time alone
+    /// can retry an incomplete attempt, but never complete a measurement.
     public mutating func tick(at time: Double) {
         guard stage.isCollecting, time.isFinite else { return }
         let limit = stage == .pinch ? 45.0 : max(20, requiredSeconds * 4)
-        if time - stageStartedAt >= limit {
-            fail(stage == .pinch && acceptedSamples > 0 ? .indistinctPinches : .insufficientSamples)
-        } else if let lastFreshFrameAt, time - lastFreshFrameAt >= 0.20 {
+        if let attemptStartedAt, time - attemptStartedAt >= limit {
+            retry(stage == .pinch ? .indistinctPinches : .insufficientSamples, at: time)
+        }
+        if let lastFreshFrameAt, time - lastFreshFrameAt >= 0.20 {
             observation = .staleFrame
             feedback = "카메라 영상이 잠시 멈췄습니다. 새 영상을 기다리고 있습니다"
         } else if lastFreshFrameAt == nil && time - stageStartedAt >= 8 {
@@ -253,10 +268,26 @@ public struct PersonalCalibrationSession {
     }
 
     private mutating func enter(_ next: PersonalCalibrationStage, at time: Double) {
-        stage = next; stageStartedAt = time; stageSeconds = 0
+        stage = next; stageStartedAt = time; stageSeconds = 0; attemptStartedAt = nil
         stageSamples.removeAll(keepingCapacity: true); lastAcceptedCapture = nil
         observation = lastFreshFrameAt == nil ? .waitingForCamera : .collecting
-        clearPlateau(); feedback = nil
+        clearPlateau(); feedback = nil; retryReason = nil
+    }
+
+    private mutating func retry(_ reason: PersonalCalibrationFailure, at time: Double) {
+        let current = stage
+        enter(current, at: time)
+        retryReason = reason; retryCount += 1; feedback = reason.message
+        if current == .pinch {
+            pinchPhase = .opening; pinchCount = 0
+            openRatios.removeAll(keepingCapacity: true); closedRatios.removeAll(keepingCapacity: true)
+            pinchShifts.removeAll(keepingCapacity: true); openAnchor = .zero; openRatio = 0
+        }
+    }
+
+    private mutating func commitCurrentStage() {
+        totalSeconds += stageSeconds
+        completedSamples += stageSamples.count
     }
 
     private mutating func reject(_ state: PersonalCalibrationObservation, _ message: String) {
@@ -267,26 +298,28 @@ public struct PersonalCalibrationSession {
     private mutating func clearPlateau() { plateau.removeAll(keepingCapacity: true); plateauSeconds = 0 }
 
     private mutating func finishSteady(at time: Double) {
-        guard stageSamples.count >= 60 else { fail(.insufficientSamples); return }
+        guard stageSamples.count >= 60 else { retry(.insufficientSamples, at: time); return }
         neutral = center(stageSamples.map(\.palm))
         let radius = stageSamples.map { ($0.palm - neutral).length }
         steadyNoise = quantile(radius, 0.9)
         let ends = max(10, stageSamples.count / 5)
         let drift = (center(stageSamples.prefix(ends).map(\.palm))
             - center(stageSamples.suffix(ends).map(\.palm))).length
-        guard steadyNoise <= 0.018, drift <= 0.012 else { fail(.handWasMoving); return }
+        guard steadyNoise <= 0.018, drift <= 0.012 else { retry(.handWasMoving, at: time); return }
+        commitCurrentStage()
         enter(.horizontal, at: time)
     }
 
     private mutating func finishRange(horizontal: Bool, at time: Double) {
-        guard stageSamples.count >= 90 else { fail(.insufficientSamples); return }
+        guard stageSamples.count >= 90 else { retry(.insufficientSamples, at: time); return }
         let values = stageSamples.map { horizontal ? $0.palm.x : $0.palm.y }
         let low = quantile(values, 0.05), high = quantile(values, 0.95)
         let origin = horizontal ? neutral.x : neutral.y
         guard high - low >= (horizontal ? 0.14 : 0.12), low <= origin - 0.035,
               high >= origin + 0.035 else {
-            fail(horizontal ? .insufficientHorizontalRange : .insufficientVerticalRange); return
+            retry(horizontal ? .insufficientHorizontalRange : .insufficientVerticalRange, at: time); return
         }
+        commitCurrentStage()
         if horizontal {
             horizontalRange = high - low; enter(.vertical, at: time)
         } else {
@@ -334,11 +367,11 @@ public struct PersonalCalibrationSession {
         clearPlateau()
     }
 
-    private mutating func finishProfile() {
+    private mutating func finishProfile(at time: Double) {
         let open = quantile(openRatios, 0.1), closed = quantile(closedRatios, 0.9)
         let gap = open - closed
         guard openRatios.count >= 20, closedRatios.count >= 15, gap >= 0.18 else {
-            fail(.indistinctPinches); return
+            retry(.indistinctPinches, at: time); return
         }
         let enter = clamp(closed + gap * 0.20, 0.18, 0.42)
         let exit = clamp(closed + gap * 0.55, enter + 0.10, 0.65)
@@ -349,9 +382,9 @@ public struct PersonalCalibrationSession {
             dragTolerance: clamp(max(steadyNoise * 3, quantile(pinchShifts, 0.5) * 1.35), 0.008, 0.025),
             steadyNoise: steadyNoise, horizontalRange: horizontalRange, verticalRange: verticalRange,
             pinchOpenRatio: open, pinchClosedRatio: closed, pinchCycles: pinchCount,
-            acceptedSamples: acceptedSamples, observedSeconds: totalSeconds)
-        guard result.isValid else { fail(.indistinctPinches); return }
-        profile = result; stage = .completed; feedback = nil; discardSamples()
+            acceptedSamples: completedSamples + stageSamples.count, observedSeconds: totalSeconds + stageSeconds)
+        guard result.isValid else { retry(.indistinctPinches, at: time); return }
+        profile = result; stage = .completed; feedback = nil; retryReason = nil; discardSamples()
     }
 
     private mutating func fail(_ reason: PersonalCalibrationFailure) {

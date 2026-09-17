@@ -69,9 +69,16 @@ final class CalibrationViewRenderingTests: XCTestCase {
             waiting.start(at: 0)
             var missing = waiting
             missing.update(nil, capturedAt: 0.1, now: 0.15, confidenceQualified: false)
+            var retry = waiting
+            for n in 1...150 where retry.snapshot.retryCount == 0 {
+                let time = Double(n) / 30
+                let palm = Point(0.5 + Double(n) * 0.0004, 0.5)
+                retry.update(HandFeatures(index: Point(palm.x, 0.35), palm: palm),
+                    capturedAt: time, now: time, confidenceQualified: true)
+            }
             let cases: [(String, PersonalCalibrationSession)] = [
                 ("intro", PersonalCalibrationSession()), ("waiting", waiting),
-                ("hand-missing", missing), ("progress", progress),
+                ("hand-missing", missing), ("progress", progress), ("retry", retry),
                 ("completed", try completedSession())
             ]
             var previousData: Data?

@@ -29,6 +29,17 @@ struct CalibrationView: View {
         }
     }
 
+    private var recoveryInstruction: String? {
+        switch snapshot.retryReason {
+        case .insufficientSamples: return "손을 다시 보여주면 이 단계부터 이어서 맞춥니다."
+        case .handWasMoving: return "편한 위치에서 잠시 멈춰주세요. 정지 단계만 다시 확인할게요."
+        case .insufficientHorizontalRange: return "좌우로 조금 더 넓게 움직여주세요. 앞에서 맞춘 손 위치는 유지됩니다."
+        case .insufficientVerticalRange: return "위아래로 조금 더 넓게 움직여주세요. 앞에서 맞춘 범위는 유지됩니다."
+        case .indistinctPinches: return "엄지와 검지를 천천히 모았다 벌려주세요. 집기 단계만 다시 확인할게요."
+        case nil: return nil
+        }
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
@@ -41,6 +52,11 @@ struct CalibrationView: View {
                             .foregroundStyle(snapshot.observation == .collecting ? Color.green : Color.secondary)
                             .font(.callout.weight(.medium))
                         Text(snapshot.instruction).font(.title3.weight(.medium)).fixedSize(horizontal: false, vertical: true)
+                        if let recoveryInstruction {
+                            Label(recoveryInstruction, systemImage: "arrow.clockwise")
+                                .font(.callout).foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                         ProgressView(value: snapshot.stageProgress).accessibilityLabel("현재 단계 진행률")
                         HStack {
                             Text("현재 단계 \(Int(snapshot.stageProgress * 100))%")

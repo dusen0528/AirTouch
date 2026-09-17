@@ -77,8 +77,9 @@ final class PersonalCalibrationTests: XCTestCase {
         XCTAssertEqual(run.session.stage, .steady)
         XCTAssertEqual(run.session.snapshot.stageProgress, 0)
         run.session.tick(at: 21)
-        XCTAssertEqual(run.session.stage, .failed)
-        XCTAssertEqual(run.session.failure, .insufficientSamples)
+        XCTAssertEqual(run.session.stage, .steady)
+        XCTAssertNil(run.session.failure)
+        XCTAssertEqual(run.session.snapshot.observation, .staleFrame)
         XCTAssertNil(run.session.profile)
     }
 
@@ -202,8 +203,9 @@ final class PersonalCalibrationTests: XCTestCase {
         for n in 0..<150 where run.session.stage == .steady {
             run.frame(palm: Point(0.5 + Double(n) * 0.0003, 0.5))
         }
-        XCTAssertEqual(run.session.stage, .failed)
-        XCTAssertEqual(run.session.failure, .handWasMoving)
+        XCTAssertEqual(run.session.stage, .steady)
+        XCTAssertEqual(run.session.snapshot.retryReason, .handWasMoving)
+        XCTAssertNil(run.session.failure)
         XCTAssertNil(run.session.profile)
     }
 
@@ -215,7 +217,9 @@ final class PersonalCalibrationTests: XCTestCase {
                 let x = oneSided ? 0.5 + abs(sin(Double(n) / 20)) * 0.3 : 0.5
                 run.frame(palm: Point(x, 0.5))
             }
-            XCTAssertEqual(run.session.failure, .insufficientHorizontalRange)
+            XCTAssertEqual(run.session.stage, .horizontal)
+            XCTAssertEqual(run.session.snapshot.retryReason, .insufficientHorizontalRange)
+            XCTAssertNil(run.session.failure)
             XCTAssertNil(run.session.profile)
         }
     }
@@ -223,7 +227,9 @@ final class PersonalCalibrationTests: XCTestCase {
     func testVerticalRangeAlsoRequiresActualMovement() {
         var run = CalibrationRun()
         run.completeMovement(vertical: 0.01)
-        XCTAssertEqual(run.session.failure, .insufficientVerticalRange)
+        XCTAssertEqual(run.session.stage, .vertical)
+        XCTAssertEqual(run.session.snapshot.retryReason, .insufficientVerticalRange)
+        XCTAssertNil(run.session.failure)
         XCTAssertNil(run.session.profile)
     }
 
@@ -239,7 +245,9 @@ final class PersonalCalibrationTests: XCTestCase {
             XCTAssertEqual(run.session.snapshot.pinchCount, 0)
             XCTAssertNil(run.session.profile)
             run.session.tick(at: run.time + 50)
-            XCTAssertEqual(run.session.failure, .indistinctPinches)
+            XCTAssertEqual(run.session.stage, .pinch)
+            XCTAssertEqual(run.session.snapshot.retryReason, .indistinctPinches)
+            XCTAssertNil(run.session.failure)
         }
     }
 
@@ -253,6 +261,11 @@ final class PersonalCalibrationTests: XCTestCase {
         }
         XCTAssertEqual(run.session.snapshot.pinchCount, 3)
         XCTAssertEqual(run.session.stage, .pinch)
+        XCTAssertNil(run.session.profile)
+        let beforeDropouts = run.session.snapshot.stageProgress
+        for n in 0..<120 { run.frame(qualified: !n.isMultiple(of: 2)) }
+        XCTAssertEqual(run.session.snapshot.stageProgress, beforeDropouts,
+                       "Pinch-stage time still needs consecutive valid observations")
         XCTAssertNil(run.session.profile)
         for _ in 0..<140 where run.session.stage == .pinch { run.frame() }
         XCTAssertEqual(run.session.stage, .completed)
