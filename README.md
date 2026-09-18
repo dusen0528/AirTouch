@@ -2,6 +2,10 @@
 
 **MacBook 내장 카메라로 마우스를 조작하는 macOS 메뉴 막대 앱.**
 
+https://github.com/user-attachments/assets/aa1335e1-f21a-498e-ac71-764c9e1975ed
+
+*실제 사용 영상 · 2026-09-19 · 약 23초*
+
 검지를 펴서 커서를 움직이고, 손가락을 모아 클릭하고, 두 손가락으로 스크롤합니다. 별도 센서 없이 Apple Vision으로 손을 인식하고 macOS 전체에 마우스 입력을 전달합니다.
 
 **현재 버전: v0.4.6 · macOS 14 이상 · Swift / SwiftUI / AppKit**
