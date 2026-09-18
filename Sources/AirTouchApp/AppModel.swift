@@ -175,10 +175,18 @@ enum ControlMode: String { case practice, system }
             self?.stop(); NSApp.terminate(nil)
         }
         terminationSignal.resume(); self.terminationSignal = terminationSignal
-        systemInput.onFault = { [weak self] generation, message in
+        systemInput.onInterruption = { [weak self] interruption in
             Task { @MainActor in
-                guard let self, self.engine.generation == generation, self.isSystemControl else { return }
-                self.stop(message: message)
+                guard let self, self.isSystemControl,
+                      let recovered = self.systemTracking.handleInputInterruption(interruption) else { return }
+                if recovered.enabled {
+                    self.engine = recovered; self.outputStarted = false
+                    self.status = recovered.reason
+                    self.interruptionReasons["영상 지연 후 자동 복구 대기", default: 0] += 1
+                    self.cursorOverlay.hide()
+                } else {
+                    self.stop(message: recovered.reason)
+                }
             }
         }
         let mouseMask: NSEvent.EventTypeMask = [.mouseMoved, .leftMouseDown, .rightMouseDown, .otherMouseDown,

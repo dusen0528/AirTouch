@@ -17,12 +17,30 @@ struct ControlDisplay: Identifiable, Equatable {
     }
 }
 
+/// A disabled output lease. Tracking loss can reacquire through the controller;
+/// permission loss requires an explicit restart after permission is restored.
+struct SystemInputInterruption: Equatable, Sendable {
+    enum Cause: String, Sendable {
+        case trackingTimeout
+        case permissionRevoked
+    }
+    let generation: Int
+    let leaseID: UInt64
+    let cause: Cause
+}
+
 final class SystemInputDispatcher {
     static let eventTag: Int64 = 0x416972546F756368
     private let queue = DispatchQueue(label: "airtouch.system-output", qos: .userInteractive)
+    private let queueKey = DispatchSpecificKey<Bool>()
+    private let clock: () -> Double
+    private let permissionCheck: () -> Bool
+    private let postSink: (([InputIntent]) -> Void)?
     private var gate = SystemOutputGate()
+    private var leaseID: UInt64 = 0
+    private var currentInterruption: SystemInputInterruption?
     private var area = DisplayArea(origin: .zero, width: 1, height: 1)
-    private let eventSource = CGEventSource(stateID: .privateState)
+    private lazy var eventSource = CGEventSource(stateID: .privateState)
     private var timer: DispatchSourceTimer?
     private var scrollRemainder = 0.0
     private var clickCount: Int64 = 1
@@ -30,50 +48,102 @@ final class SystemInputDispatcher {
     private var lastClickPosition = Point.zero
     private var dragged = false
     private var doubleClickInterval = 0.5
-    var onFault: ((Int, String) -> Void)?
-    private static var now: Double { ProcessInfo.processInfo.systemUptime }
-
-    init() {
+    /// Called once on the output queue, after any held button has been released.
+    /// Consumers dispatch to their owner and check isCurrent before recovery.
+    var onInterruption: ((SystemInputInterruption) -> Void)?
+    init(clock: @escaping () -> Double = { ProcessInfo.processInfo.systemUptime },
+         permissionCheck: @escaping () -> Bool = { CGPreflightPostEventAccess() },
+         postSink: (([InputIntent]) -> Void)? = nil, watchdogEnabled: Bool = true) {
+        self.clock = clock; self.permissionCheck = permissionCheck; self.postSink = postSink
+        queue.setSpecific(key: queueKey, value: true)
+        guard watchdogEnabled else { return }
         let timer = DispatchSource.makeTimerSource(queue: queue)
         timer.schedule(deadline: .now() + 0.03, repeating: 0.03)
-        timer.setEventHandler { [weak self] in
-            guard let self, self.gate.active else { return }
-            let generation = self.gate.generation
-            let actions = self.gate.expire(now: Self.now, permitted: CGPreflightPostEventAccess())
-            self.post(actions, releaseAt: CGEvent(source: nil)?.location)
-            if !self.gate.active { self.onFault?(generation, "입력 응답 또는 권한이 끊겨 전체 제어를 멈췄습니다") }
-        }
+        timer.setEventHandler { [weak self] in self?.watchdogStep() }
         self.timer = timer; timer.resume()
     }
 
     deinit { timer?.cancel() }
 
+    /// Runs the timer's production path deterministically without posting input
+    /// when a diagnostic sink was supplied.
+    func checkWatchdog() { sync { watchdogStep() } }
+
+    /// Permission restoration alone never revives a disabled lease.
+    func isCurrent(_ interruption: SystemInputInterruption) -> Bool {
+        sync { !gate.active && currentInterruption == interruption }
+    }
+
+    private func watchdogStep() {
+        guard gate.active else { return }
+        let lease = leaseID
+        let permitted = permissionCheck()
+        let actions = gate.expire(now: clock(), permitted: permitted)
+        post(actions, releaseAt: releasePosition())
+        notifyInterruption(wasActive: true, lease: lease, permitted: permitted)
+    }
+
+    private func notifyInterruption(wasActive: Bool, lease: UInt64, permitted: Bool) {
+        guard wasActive, !gate.active, leaseID == lease, currentInterruption == nil else { return }
+        let interruption = SystemInputInterruption(generation: gate.generation, leaseID: lease,
+            cause: permitted ? .trackingTimeout : .permissionRevoked)
+        currentInterruption = interruption
+        onInterruption?(interruption)
+    }
+
+    private func sync<T>(_ work: () -> T) -> T {
+        if DispatchQueue.getSpecific(key: queueKey) == true { return work() }
+        return queue.sync(execute: work)
+    }
+
+    private func releasePosition() -> CGPoint? {
+        postSink == nil ? CGEvent(source: nil)?.location : nil
+    }
+
     func begin(generation: Int, area: DisplayArea, position: Point, doubleClickInterval: Double) {
-        queue.sync {
-            post(gate.stop(), releaseAt: CGEvent(source: nil)?.location)
+        sync {
+            leaseID &+= 1; currentInterruption = nil
+            post(gate.stop(), releaseAt: releasePosition())
             self.area = area; self.doubleClickInterval = doubleClickInterval
             scrollRemainder = 0; lastClickTime = -.infinity; dragged = false
-            _ = gate.begin(generation: generation, position: position, now: Self.now)
+            _ = gate.begin(generation: generation, position: position, now: clock())
         }
     }
 
     func frame(generation: Int, capturedAt: Double, validHand: Bool, intents: [InputIntent]) {
         queue.async { [weak self] in
             guard let self else { return }
-            self.gate.heartbeat(generation: generation, capturedAt: capturedAt, validHand: validHand, now: Self.now)
-            let actions = self.gate.accept(intents, generation: generation, now: Self.now, permitted: CGPreflightPostEventAccess())
+            let wasActive = self.gate.active
+            let lease = self.leaseID
+            let now = self.clock()
+            let permitted = self.permissionCheck()
+            self.gate.heartbeat(generation: generation, capturedAt: capturedAt, validHand: validHand, now: now)
+            let actions = self.gate.accept(intents, generation: generation, now: now, permitted: permitted)
             self.post(actions)
+            self.notifyInterruption(wasActive: wasActive, lease: lease, permitted: permitted)
         }
     }
 
     func release(_ intents: [InputIntent], generation: Int) {
-        queue.sync { post(gate.accept(intents, generation: generation, now: Self.now, permitted: CGPreflightPostEventAccess())) }
+        sync {
+            let wasActive = gate.active
+            let lease = leaseID
+            let permitted = permissionCheck()
+            post(gate.accept(intents, generation: generation, now: clock(), permitted: permitted))
+            notifyInterruption(wasActive: wasActive, lease: lease, permitted: permitted)
+        }
     }
 
     /// Synchronous: queued frames cannot re-press after an emergency stop.
-    func stop() { queue.sync { post(gate.stop(), releaseAt: CGEvent(source: nil)?.location); scrollRemainder = 0 } }
+    func stop() {
+        sync {
+            leaseID &+= 1; currentInterruption = nil
+            post(gate.stop(), releaseAt: releasePosition()); scrollRemainder = 0
+        }
+    }
 
     private func post(_ intents: [InputIntent], releaseAt: CGPoint? = nil) {
+        if let postSink { postSink(intents); return }
         for intent in intents {
             var event: CGEvent?
             switch intent {
@@ -99,12 +169,12 @@ final class SystemInputDispatcher {
                 switch intent {
                 case .down:
                     type = .leftMouseDown
-                    clickCount = !dragged && Self.now - lastClickTime <= doubleClickInterval
+                    clickCount = !dragged && clock() - lastClickTime <= doubleClickInterval
                         && (p - lastClickPosition).length <= 6 ? min(3, clickCount + 1) : 1
                     dragged = false
                 case .drag: type = .leftMouseDragged; dragged = true
                 case .up:
-                    type = .leftMouseUp; lastClickTime = dragged ? -.infinity : Self.now; lastClickPosition = p
+                    type = .leftMouseUp; lastClickTime = dragged ? -.infinity : clock(); lastClickPosition = p
                 default: type = .mouseMoved
                 }
                 event = CGEvent(mouseEventSource: eventSource, mouseType: type,

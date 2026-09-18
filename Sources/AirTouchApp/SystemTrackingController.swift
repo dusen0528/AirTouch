@@ -9,6 +9,11 @@ protocol SystemTrackingInputSink: AnyObject {
     func frame(generation: Int, capturedAt: Double, validHand: Bool, intents: [InputIntent])
     func release(_ intents: [InputIntent], generation: Int)
     func stop()
+    func isCurrent(_ interruption: SystemInputInterruption) -> Bool
+}
+
+extension SystemTrackingInputSink {
+    func isCurrent(_ interruption: SystemInputInterruption) -> Bool { false }
 }
 
 extension SystemInputDispatcher: SystemTrackingInputSink {}
@@ -210,6 +215,22 @@ final class SystemTrackingController {
             counters.intentCount += engine.pause(reason: reason).count
             input.stop(); outputStarted = false
             return engine
+        }
+    }
+
+    /// A final-output timeout releases input immediately, but must not close the
+    /// camera session. Resume only from a fresh capture and normal pose activation.
+    /// Run this off the output queue: pause/stop synchronously fence that queue.
+    func handleInputInterruption(_ interruption: SystemInputInterruption) -> GestureEngine? {
+        sync {
+            guard running, engine.generation == interruption.generation,
+                  input.isCurrent(interruption) else { return nil }
+            switch interruption.cause {
+            case .trackingTimeout:
+                return pause(until: clock(), reason: "영상이 잠깐 끊겼습니다 · 검지를 펴면 다시 이어집니다")
+            case .permissionRevoked:
+                return stop(reason: "입력 권한이 해제되어 전체 제어를 멈췄습니다")
+            }
         }
     }
 
