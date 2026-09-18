@@ -1,0 +1,66 @@
+[0/1] Planning build
+Building for debugging...
+[0/6] Write sources
+[1/6] Write swift-version--58304C5D6DBC2206.txt
+[3/7] Compiling AirTouchAppTests SystemInputDispatcherTests.swift
+[4/7] Compiling AirTouchAppTests SystemTrackingRecoveryTests.swift
+[5/7] Emitting module AirTouchAppTests
+[5/7] Write Objects.LinkFileList
+[6/7] Linking AirTouchPackageTests
+Build complete! (2.44s)
+Test Suite 'Selected tests' started at 2026-09-19 03:20:03.203.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-19 03:20:03.206.
+Test Suite 'SystemInputDispatcherTests' started at 2026-09-19 03:20:03.206.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testBeginRequiresFreshValidHandBeforeAnyInput]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testBeginRequiresFreshValidHandBeforeAnyInput]' passed (0.002 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testBeginWithoutFramesTimesOutWithoutGrantOrRelease]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testBeginWithoutFramesTimesOutWithoutGrantOrRelease]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testCallbackCanCheckLeaseAndStopWithoutQueueDeadlock]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testCallbackCanCheckLeaseAndStopWithoutQueueDeadlock]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testExplicitStopInvalidatesInterruptionAndRejectsFurtherFrames]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testExplicitStopInvalidatesInterruptionAndRejectsFurtherFrames]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testExplicitStopWhileHeldReleasesOnceWithoutInterruption]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testExplicitStopWhileHeldReleasesOnceWithoutInterruption]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testHeldHandTimeoutReleasesDespiteRecentNoHandHeartbeat]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testHeldHandTimeoutReleasesDespiteRecentNoHandHeartbeat]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testNewLeaseInSameGenerationInvalidatesPendingInterruption]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testNewLeaseInSameGenerationInvalidatesPendingInterruption]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testOldGenerationCannotRevokeNewLease]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testOldGenerationCannotRevokeNewLease]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testPermissionRevocationInFrameReportsInterruptionImmediately]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testPermissionRevocationInFrameReportsInterruptionImmediately]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testPermissionRevocationInReleaseReportsOnceBeforeNextTimer]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testPermissionRevocationInReleaseReportsOnceBeforeNextTimer]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testStaleFrameCanExpireDeliveryAndMustReportOnce]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testStaleFrameCanExpireDeliveryAndMustReportOnce]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testTimedOutReleaseReportsTrackingTimeout]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testTimedOutReleaseReportsTrackingTimeout]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testTimerClassifiesPermissionRevocationEvenWhenTrackingAlsoExpired]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testTimerClassifiesPermissionRevocationEvenWhenTrackingAlsoExpired]' passed (0.000 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testTrackingTimeoutReleasesOnceAndDisarmedLeaseRejectsFreshHeartbeat]' started.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testTrackingTimeoutReleasesOnceAndDisarmedLeaseRejectsFreshHeartbeat]' passed (0.000 seconds).
+Test Suite 'SystemInputDispatcherTests' passed at 2026-09-19 03:20:03.213.
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.005 (0.007) seconds
+Test Suite 'SystemTrackingRecoveryTests' started at 2026-09-19 03:20:03.213.
+Test Case '-[AirTouchAppTests.SystemTrackingRecoveryTests testCaptureBeforeRecoveryFenceIsRejectedEvenWhenItsAgeIsFresh]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingRecoveryTests testCaptureBeforeRecoveryFenceIsRejectedEvenWhenItsAgeIsFresh]' passed (0.002 seconds).
+Test Case '-[AirTouchAppTests.SystemTrackingRecoveryTests testDelayedInterruptionCannotPauseANewerLeaseInTheSameGeneration]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingRecoveryTests testDelayedInterruptionCannotPauseANewerLeaseInTheSameGeneration]' passed (0.001 seconds).
+Test Case '-[AirTouchAppTests.SystemTrackingRecoveryTests testFiveTrackingTimeoutsRecoverRepeatedlyWithinTheSameSession]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingRecoveryTests testFiveTrackingTimeoutsRecoverRepeatedlyWithinTheSameSession]' passed (0.003 seconds).
+Test Case '-[AirTouchAppTests.SystemTrackingRecoveryTests testPermissionRestorationDoesNotResumeUntilExplicitStart]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingRecoveryTests testPermissionRestorationDoesNotResumeUntilExplicitStart]' passed (0.002 seconds).
+Test Case '-[AirTouchAppTests.SystemTrackingRecoveryTests testReturningWithPinchHeldCannotCreateAnotherClick]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingRecoveryTests testReturningWithPinchHeldCannotCreateAnotherClick]' passed (0.002 seconds).
+Test Case '-[AirTouchAppTests.SystemTrackingRecoveryTests testTimeoutReleasesOnceAndFreshPointerDwellResumesWithoutManualStart]' started.
+Test Case '-[AirTouchAppTests.SystemTrackingRecoveryTests testTimeoutReleasesOnceAndFreshPointerDwellResumesWithoutManualStart]' passed (0.002 seconds).
+Test Suite 'SystemTrackingRecoveryTests' passed at 2026-09-19 03:20:03.223.
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.010 (0.011) seconds
+Test Suite 'AirTouchPackageTests.xctest' passed at 2026-09-19 03:20:03.223.
+	 Executed 20 tests, with 0 failures (0 unexpected) in 0.015 (0.017) seconds
+Test Suite 'Selected tests' passed at 2026-09-19 03:20:03.223.
+	 Executed 20 tests, with 0 failures (0 unexpected) in 0.015 (0.020) seconds
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.

@@ -1,0 +1,40 @@
+[0/1] Planning build
+Building for debugging...
+[0/7] Write sources
+[2/7] Write swift-version--58304C5D6DBC2206.txt
+[4/9] Compiling AirTouchApp SystemInput.swift
+[5/9] Emitting module AirTouchApp
+[6/16] Compiling AirTouchApp CalibrationView.swift
+[7/16] Compiling AirTouchApp ContentView.swift
+[8/16] Compiling AirTouchApp AirTouchApp.swift
+[9/16] Compiling AirTouchApp SetupView.swift
+[10/16] Compiling AirTouchApp AppWindows.swift
+[11/16] Compiling AirTouchApp SystemTrackingController.swift
+[12/16] Compiling AirTouchApp AppModel.swift
+[12/17] Write Objects.LinkFileList
+[13/17] Linking AirTouch
+[14/17] Applying AirTouch
+[16/19] Emitting module AirTouchAppTests
+[17/19] Compiling AirTouchAppTests SystemInputDispatcherTests.swift
+[17/19] Write Objects.LinkFileList
+[18/19] Linking AirTouchPackageTests
+Build complete! (5.33s)
+Test Suite 'Selected tests' started at 2026-09-19 03:13:58.086.
+Test Suite 'AirTouchPackageTests.xctest' started at 2026-09-19 03:13:58.089.
+Test Suite 'SystemInputDispatcherTests' started at 2026-09-19 03:13:58.089.
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testPermissionRevocationInFrameReportsFaultImmediately]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchAppTests/SystemInputDispatcherTests.swift:61: error: -[AirTouchAppTests.SystemInputDispatcherTests testPermissionRevocationInFrameReportsFaultImmediately] : XCTAssertEqual failed: ("[]") is not equal to ("[7]") - Disarming in frame.accept must notify even though the next timer skips an inactive gate
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testPermissionRevocationInFrameReportsFaultImmediately]' failed (0.500 seconds).
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testTrackingTimeoutReleasesWithoutRequestingFullSessionStop]' started.
+/Users/inho/Documents/ChatGPT/AirTouch/Tests/AirTouchAppTests/SystemInputDispatcherTests.swift:44: error: -[AirTouchAppTests.SystemInputDispatcherTests testTrackingTimeoutReleasesWithoutRequestingFullSessionStop] : XCTAssertEqual failed: ("1") is not equal to ("0") - A transient tracking timeout must not request a complete session stop
+Test Case '-[AirTouchAppTests.SystemInputDispatcherTests testTrackingTimeoutReleasesWithoutRequestingFullSessionStop]' failed (0.001 seconds).
+Test Suite 'SystemInputDispatcherTests' failed at 2026-09-19 03:13:58.591.
+	 Executed 2 tests, with 2 failures (0 unexpected) in 0.501 (0.502) seconds
+Test Suite 'AirTouchPackageTests.xctest' failed at 2026-09-19 03:13:58.591.
+	 Executed 2 tests, with 2 failures (0 unexpected) in 0.501 (0.502) seconds
+Test Suite 'Selected tests' failed at 2026-09-19 03:13:58.591.
+	 Executed 2 tests, with 2 failures (0 unexpected) in 0.501 (0.505) seconds
+◇ Test run started.
+↳ Testing Library Version: 1743
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
